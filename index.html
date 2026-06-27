@@ -90,6 +90,24 @@
       background: var(--red); border-radius: 3px 3px 0 0;
     }
 
+    /* ---------- Expired-session banner ---------- */
+    .expired-banner {
+      display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+      background: var(--red-dark); color: #fff; border-top: 1px solid rgba(255,255,255,.15);
+    }
+    .expired-banner svg { width: 26px; height: 26px; fill: #fff; flex: none; }
+    .eb-text { display: flex; flex-direction: column; line-height: 1.35; min-width: 0; }
+    .eb-text strong { font-weight: 700; font-size: 0.9rem; }
+    .eb-text span { font-size: 0.82rem; opacity: .94; }
+    .eb-status { font-size: 0.8rem; font-weight: 500; }
+    .expired-banner .spacer { flex: 1 1 auto; }
+    .expired-banner .btn { background: #fff; color: var(--red-dark); }
+    .expired-banner .btn:hover { background: #f1f1f1; }
+    @media (max-width: 600px) {
+      .expired-banner { flex-wrap: wrap; }
+      .expired-banner .spacer { display: none; }
+    }
+
     /* ---------- Buttons ---------- */
     .btn {
       height: 40px; border: 0; border-radius: 999px; background: var(--red); color: #fff;
@@ -332,6 +350,16 @@
           Statistics
         </button>
       </nav>
+      <div id="expiredBanner" class="expired-banner hidden" role="alert">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+        <div class="eb-text">
+          <strong>Your session expired — changes are no longer being saved.</strong>
+          <span>Your edits are still on screen. Sign in again, then save to keep them.</span>
+          <span id="bannerStatus" class="eb-status"></span>
+        </div>
+        <div class="spacer"></div>
+        <button id="reauthBtn" class="btn" type="button">Sign in again</button>
+      </div>
     </header>
 
     <main>
@@ -497,6 +525,8 @@
       projects: ["Project ID", "Kid ID", "Kid Name", "Project", "Start Date", "End Date", "Notes", "Updated At"]
     });
     const TOKEN_FRESH_MS = 60000;
+    const TOKEN_STORAGE_KEY = "greylock_radio_oauth";
+    const EXPIRY_REFRESH_MARGIN_MS = 120000; // attempt a silent refresh ~2 min before expiry
     const CAMP_WEEKS = 9;
     const WEEK_START = 0; // 0 = Sunday
     const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -516,7 +546,9 @@
       projects: [],
       selectedKidId: "",
       view: "files",
-      selectedDate: ""
+      selectedDate: "",
+      expiryTimer: null,
+      sessionExpired: false
     };
 
     function $(id) { return document.getElementById(id); }
@@ -524,7 +556,7 @@
       [
         "loginView", "filesView", "calendarView", "statsView",
         "loginBtn", "loginStatus", "userChip", "userPhoto", "userName",
-        "openSheetBtn", "refreshBtn", "logoutBtn",
+        "openSheetBtn", "refreshBtn", "logoutBtn", "expiredBanner", "reauthBtn", "bannerStatus",
         "appTabs", "tabFiles", "tabCalendar", "tabStats",
         "kidSearchInput", "newFromSearchBtn", "kidCount", "kidList",
         "fileTitle", "fileSubtitle", "saveKidBtn", "deleteKidBtn",
@@ -541,9 +573,10 @@
     }
     function setBusy(isBusy) {
       document.querySelectorAll("button, input, textarea, select").forEach(function (el) {
-        if (el.id === "logoutBtn") return;
+        if (el.id === "logoutBtn" || el.id === "reauthBtn") return;
         el.disabled = !!isBusy;
       });
+      if (!isBusy && state.sessionExpired) lockWrites(true);
     }
     function escapeHtml(value) {
       return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
@@ -614,21 +647,86 @@
       });
       setStatus(els.loginStatus, "");
     }
+    function storeNewToken(resp) {
+      state.accessToken = resp.access_token;
+      state.accessTokenExpiresAt = Date.now() + ((Number(resp.expires_in) || 3600) * 1000);
+      state.sessionExpired = false;
+      saveStoredToken();
+      scheduleExpiryWatch();
+    }
     function ensureAccessToken(interactive) {
       if (state.accessToken && Date.now() < state.accessTokenExpiresAt - TOKEN_FRESH_MS) return Promise.resolve(state.accessToken);
+      // A non-interactive call while the session is known-expired must fail loudly, never silently pop up.
+      if (state.sessionExpired && !interactive) return Promise.reject(new Error("Your session expired. Sign in again to keep saving."));
       if (!state.tokenClient) return Promise.reject(new Error("Google sign-in is still loading."));
       return new Promise(function (resolve, reject) {
         state.tokenClient.callback = function (resp) {
           if (!resp || resp.error || !resp.access_token) {
             reject(new Error((resp && (resp.error_description || resp.error)) || "Google sign-in failed.")); return;
           }
-          state.accessToken = resp.access_token;
-          state.accessTokenExpiresAt = Date.now() + ((Number(resp.expires_in) || 3600) * 1000);
+          storeNewToken(resp);
           resolve(state.accessToken);
         };
         try { state.tokenClient.requestAccessToken({ prompt: interactive ? "consent" : "" }); }
         catch (err) { reject(err); }
       });
+    }
+    function forceSilentRefresh() {
+      if (!state.tokenClient) return Promise.reject(new Error("Google sign-in is still loading."));
+      return new Promise(function (resolve, reject) {
+        state.tokenClient.callback = function (resp) {
+          if (!resp || resp.error || !resp.access_token) {
+            reject(new Error((resp && (resp.error_description || resp.error)) || "Silent token refresh failed.")); return;
+          }
+          storeNewToken(resp);
+          resolve(state.accessToken);
+        };
+        try { state.tokenClient.requestAccessToken({ prompt: "" }); }
+        catch (err) { reject(err); }
+      });
+    }
+    /* ---------- Token persistence + expiry safety ---------- */
+    function saveStoredToken() {
+      try { localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify({ accessToken: state.accessToken, expiresAt: state.accessTokenExpiresAt })); } catch (e) {}
+    }
+    function loadStoredToken() {
+      try {
+        const data = JSON.parse(localStorage.getItem(TOKEN_STORAGE_KEY));
+        return (data && data.accessToken && data.expiresAt) ? data : null;
+      } catch (e) { return null; }
+    }
+    function clearStoredToken() { try { localStorage.removeItem(TOKEN_STORAGE_KEY); } catch (e) {} }
+    function appIsActive() { return els.appTabs && !els.appTabs.classList.contains("hidden"); }
+    function scheduleExpiryWatch() {
+      if (state.expiryTimer) { clearTimeout(state.expiryTimer); state.expiryTimer = null; }
+      if (!state.accessTokenExpiresAt) return;
+      const delay = Math.max(0, state.accessTokenExpiresAt - EXPIRY_REFRESH_MARGIN_MS - Date.now());
+      state.expiryTimer = setTimeout(function () {
+        // Try to renew silently; if Google can't, lock the UI before the token is actually unusable.
+        forceSilentRefresh().catch(function () { enterExpired(); });
+      }, delay);
+    }
+    function lockWrites(locked) {
+      ["kidNameInput", "divisionInput", "sideSelect", "projectNameInput", "projectStartInput", "projectEndInput", "saveKidBtn", "deleteKidBtn", "addProjectBtn"].forEach(function (id) {
+        if (els[id]) els[id].disabled = locked;
+      });
+      document.querySelectorAll("[data-save-project],[data-delete-project]").forEach(function (b) { b.disabled = locked; });
+    }
+    function enterExpired() {
+      if (state.expiryTimer) { clearTimeout(state.expiryTimer); state.expiryTimer = null; }
+      state.accessToken = "";
+      state.accessTokenExpiresAt = 0;
+      clearStoredToken();
+      if (!appIsActive()) { state.sessionExpired = false; return; } // never fully signed in; let the login flow handle it
+      state.sessionExpired = true;
+      if (els.expiredBanner) els.expiredBanner.classList.remove("hidden");
+      lockWrites(true);
+    }
+    function clearExpired() {
+      state.sessionExpired = false;
+      if (els.expiredBanner) els.expiredBanner.classList.add("hidden");
+      if (els.bannerStatus) els.bannerStatus.textContent = "";
+      lockWrites(false);
     }
     function fetchJson(url, options) {
       return ensureAccessToken(false).then(function (token) {
@@ -640,6 +738,7 @@
             if (text) { try { data = JSON.parse(text); } catch (err) { data = text; } }
             if (!res.ok) {
               const detail = data && data.error && (data.error.message || data.error.status);
+              if (res.status === 401) enterExpired(); // token rejected by Google: lock the UI, never let edits look saved
               throw new Error("Google API " + res.status + (detail ? ": " + detail : ""));
             }
             return data || {};
@@ -766,11 +865,13 @@
       if (view === "calendar") renderCalendar();
       else if (view === "stats") renderStats();
       else { renderKids(); renderSelectedKid(); renderProjects(); }
+      if (state.sessionExpired) lockWrites(true);
     }
     function renderAll() {
       renderKids(); renderSelectedKid(); renderProjects();
       if (state.view === "calendar") renderCalendar();
       else if (state.view === "stats") renderStats();
+      if (state.sessionExpired) lockWrites(true);
     }
 
     /* ---------- Files view ---------- */
@@ -1075,22 +1176,52 @@
     }
 
     /* ---------- Session ---------- */
-    function signIn() {
-      setStatus(els.loginStatus, "Opening Google sign-in…");
-      setBusy(true);
-      ensureAccessToken(true).then(function () {
-        setStatus(els.loginStatus, "Preparing kid files…");
-        return loadProfile();
-      }).then(ensureWorkbook).then(readAllSheets).then(function () {
+    function beginSession() {
+      return loadProfile().then(ensureWorkbook).then(readAllSheets).then(function () {
         els.loginView.classList.add("hidden");
         els.appTabs.classList.remove("hidden");
         els.refreshBtn.classList.remove("hidden");
         els.logoutBtn.classList.remove("hidden");
         if (state.kids.length && !state.selectedKidId) state.selectedKidId = state.kids[0].id;
         state.selectedDate = defaultDate();
+        clearExpired();
+        scheduleExpiryWatch();
         setView("files");
+      });
+    }
+    function signIn() {
+      setStatus(els.loginStatus, "Opening Google sign-in…");
+      setBusy(true);
+      ensureAccessToken(true).then(function () {
+        setStatus(els.loginStatus, "Preparing kid files…");
+        return beginSession();
       }).catch(function (err) { setStatus(els.loginStatus, messageFromError(err, "Could not sign in."), "bad"); })
         .finally(function () { setBusy(false); });
+    }
+    function resumeSession() {
+      const stored = loadStoredToken();
+      if (!stored) return;
+      if (stored.expiresAt <= Date.now() + TOKEN_FRESH_MS) { clearStoredToken(); return; } // too close to expiry to trust
+      state.accessToken = stored.accessToken;
+      state.accessTokenExpiresAt = stored.expiresAt;
+      state.sessionExpired = false;
+      setBusy(true);
+      setStatus(els.loginStatus, "Restoring your session…");
+      beginSession().catch(function () {
+        // Stored token was rejected or data failed to load: drop it and require a fresh sign-in.
+        clearStoredToken();
+        state.accessToken = ""; state.accessTokenExpiresAt = 0;
+        setStatus(els.loginStatus, "");
+      }).finally(function () { setBusy(false); });
+    }
+    function reauthorize() {
+      if (els.bannerStatus) els.bannerStatus.textContent = "Opening Google sign-in…";
+      ensureAccessToken(true).then(loadProfile).then(function () {
+        clearExpired();
+        setStatus(els.fileStatus, "Session restored — your changes are still here. Save again to keep them.", "good");
+      }).catch(function (err) {
+        if (els.bannerStatus) els.bannerStatus.textContent = messageFromError(err, "Could not sign in.");
+      });
     }
     function refreshData() {
       setBusy(true);
@@ -1104,6 +1235,9 @@
       if (state.accessToken && window.google && google.accounts && google.accounts.oauth2) {
         google.accounts.oauth2.revoke(state.accessToken, function () {});
       }
+      if (state.expiryTimer) { clearTimeout(state.expiryTimer); state.expiryTimer = null; }
+      clearStoredToken();
+      clearExpired();
       state.accessToken = ""; state.accessTokenExpiresAt = 0; state.spreadsheetId = "";
       state.currentUser = null; state.kids = []; state.projects = []; state.selectedKidId = "";
       els.filesView.classList.add("hidden"); els.calendarView.classList.add("hidden"); els.statsView.classList.add("hidden");
@@ -1115,6 +1249,7 @@
     }
     function bindEvents() {
       els.loginBtn.addEventListener("click", signIn);
+      els.reauthBtn.addEventListener("click", reauthorize);
       els.logoutBtn.addEventListener("click", logout);
       els.refreshBtn.addEventListener("click", refreshData);
       els.openSheetBtn.addEventListener("click", function () { if (state.spreadsheetUrl) window.open(state.spreadsheetUrl, "_blank", "noopener"); });
@@ -1145,6 +1280,7 @@
     cacheEls();
     bindEvents();
     initGoogle();
+    resumeSession();
   </script>
 </body>
 </html>
