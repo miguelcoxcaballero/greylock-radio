@@ -1,47 +1,1052 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src https://*.googleapis.com https://accounts.google.com; img-src 'self' data: https://*.googleusercontent.com; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
   <title>Greylock Radio</title>
+  <script src="https://accounts.google.com/gsi/client" async defer data-auto_prompt="false"></script>
   <style>
     :root {
-      color-scheme: dark;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #101114;
-      color: #f3f3f3;
+      color-scheme: light;
+      --bg: #f6f2e8;
+      --paper: #fffdf8;
+      --paper-2: #f0eadf;
+      --ink: #25211a;
+      --muted: #6e6658;
+      --line: #ded4c2;
+      --accent: #245c46;
+      --accent-2: #1c4938;
+      --warn: #8c4a14;
+      --bad: #a32b2b;
+      --good: #206a3f;
+      --shadow: 0 12px 28px rgba(63, 54, 38, 0.08);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--ink);
     }
 
-    body {
-      min-height: 100vh;
-      margin: 0;
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); }
+    button, input, textarea, select { font: inherit; }
+    button { cursor: pointer; }
+    .hidden { display: none !important; }
+    .app { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
+    .topbar {
+      min-height: 64px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 253, 248, 0.92);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+    .brand { display: grid; gap: 1px; min-width: 0; }
+    .brand h1 { margin: 0; font-size: 1.2rem; line-height: 1; letter-spacing: 0; }
+    .brand span { color: var(--muted); font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .top-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+    .user-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--paper);
+      color: var(--muted);
+      font-size: 0.82rem;
+      max-width: 280px;
+    }
+    .user-chip img { width: 26px; height: 26px; border-radius: 50%; background: var(--paper-2); }
+    .user-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .btn {
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      color: var(--ink);
+      padding: 8px 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: none;
+    }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: white; }
+    .btn.primary:hover { background: var(--accent-2); }
+    .btn.danger { color: var(--bad); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    main { min-width: 0; }
+    .login {
+      min-height: calc(100vh - 64px);
       display: grid;
       place-items: center;
+      padding: 28px;
     }
-
-    main {
+    .login-card {
+      width: min(560px, 100%);
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 16px;
       text-align: center;
-      padding: 32px;
     }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: clamp(2rem, 8vw, 5rem);
-      font-weight: 800;
-      letter-spacing: 0;
+    .login-card h2 { margin: 0; font-size: clamp(2rem, 7vw, 4rem); line-height: 0.95; letter-spacing: 0; }
+    .login-card p { margin: 0; color: var(--muted); }
+    .workspace {
+      display: grid;
+      grid-template-columns: 230px minmax(0, 1fr);
+      min-height: calc(100vh - 64px);
     }
-
-    p {
-      margin: 0;
-      color: #c9ccd2;
-      font-size: 1.1rem;
+    .sidebar {
+      border-right: 1px solid var(--line);
+      background: var(--paper-2);
+      padding: 14px;
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+    .nav-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 11px 12px;
+      background: transparent;
+      color: var(--ink);
+      display: grid;
+      gap: 2px;
+    }
+    .nav-btn strong { font-size: 0.94rem; }
+    .nav-btn span { color: var(--muted); font-size: 0.78rem; }
+    .nav-btn.active { background: var(--paper); border-color: var(--line); box-shadow: 0 4px 14px rgba(63,54,38,.05); }
+    .content { padding: 18px; min-width: 0; overflow: auto; }
+    .view { display: grid; gap: 16px; max-width: 1320px; margin: 0 auto; }
+    .view-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .view-title { display: grid; gap: 4px; }
+    .view-title h2 { margin: 0; font-size: 1.45rem; }
+    .view-title p, .muted { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      min-width: 0;
+    }
+    .panel.tight { padding: 12px; }
+    .grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 0.55fr); gap: 16px; align-items: start; }
+    .form-grid { display: grid; gap: 10px; }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .between { justify-content: space-between; }
+    label { display: grid; gap: 5px; color: var(--muted); font-size: 0.82rem; font-weight: 600; }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 10px;
+      outline: none;
+    }
+    textarea { min-height: 130px; resize: vertical; line-height: 1.4; }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(36,92,70,.12); }
+    .status { min-height: 22px; color: var(--muted); font-size: 0.86rem; }
+    .status.good { color: var(--good); }
+    .status.bad { color: var(--bad); }
+    .status.warn { color: var(--warn); }
+    .table-wrap { width: 100%; overflow: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 9px 10px; text-align: left; vertical-align: middle; }
+    th { position: sticky; top: 0; background: #faf7f0; color: var(--muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: .04em; z-index: 1; }
+    tr:last-child td { border-bottom: 0; }
+    td.actions { width: 1%; white-space: nowrap; }
+    .kid-link { border: 0; background: none; padding: 0; color: var(--accent); font-weight: 700; text-align: left; }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(110px, 1fr));
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #fff;
+    }
+    .dow, .day {
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      min-width: 0;
+    }
+    .dow:nth-child(7n), .day:nth-child(7n) { border-right: 0; }
+    .dow {
+      padding: 9px 10px;
+      background: #faf7f0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .day {
+      min-height: 96px;
+      padding: 8px;
+      display: grid;
+      align-content: start;
+      gap: 6px;
+      background: #fff;
+      text-align: left;
+      border-top: 0;
+    }
+    .day:hover { background: #fbf8f1; }
+    .day.selected { outline: 3px solid rgba(36,92,70,.22); outline-offset: -3px; background: #f4faf6; }
+    .day.today .day-number { background: var(--accent); color: white; }
+    .day-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; }
+    .day-meta { display: grid; gap: 3px; color: var(--muted); font-size: 0.78rem; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      max-width: 100%;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #edf4ef;
+      color: var(--accent-2);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .attendance-matrix th:first-child,
+    .attendance-matrix td:first-child {
+      position: sticky;
+      left: 0;
+      background: inherit;
+      z-index: 2;
+      min-width: 190px;
+    }
+    .attendance-matrix th:first-child { background: #faf7f0; z-index: 3; }
+    .check-cell { text-align: center; }
+    .check-cell input { width: 20px; height: 20px; }
+    .kid-file {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.36fr) minmax(0, 1fr);
+      gap: 16px;
+    }
+    .kid-list { max-height: 560px; overflow: auto; display: grid; gap: 6px; }
+    .kid-item {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fff;
+      text-align: left;
+      display: grid;
+      gap: 2px;
+    }
+    .kid-item.active { border-color: var(--accent); background: #f4faf6; }
+    .kid-item strong { color: var(--ink); }
+    .kid-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .stat { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #fff; }
+    .stat strong { display: block; font-size: 1.5rem; }
+    .empty { color: var(--muted); padding: 16px; text-align: center; }
+    @media (max-width: 900px) {
+      .workspace { grid-template-columns: 1fr; }
+      .sidebar { grid-template-columns: repeat(3, minmax(0, 1fr)); border-right: 0; border-bottom: 1px solid var(--line); }
+      .grid-2, .kid-file { grid-template-columns: 1fr; }
+      .calendar-grid { grid-template-columns: repeat(7, minmax(84px, 1fr)); }
+      .day { min-height: 84px; }
+    }
+    @media (max-width: 620px) {
+      .topbar { align-items: flex-start; }
+      .top-actions { width: 100%; justify-content: flex-start; }
+      .sidebar { grid-template-columns: 1fr; }
+      .content { padding: 10px; }
+      .calendar-grid { display: block; border: 0; background: transparent; }
+      .dow { display: none; }
+      .day { border: 1px solid var(--line); border-radius: 8px; margin-bottom: 8px; min-height: 76px; }
+      table { min-width: 620px; }
     }
   </style>
 </head>
 <body>
-  <main>
-    <h1>Greylock Radio</h1>
-    <p>Pagina de prueba funcionando.</p>
-  </main>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <h1>Greylock Radio</h1>
+        <span id="workbookLabel">Attendance records</span>
+      </div>
+      <div class="top-actions">
+        <div id="userChip" class="user-chip hidden">
+          <img id="userPhoto" alt="">
+          <span id="userName"></span>
+        </div>
+        <button id="openSheetBtn" class="btn hidden" type="button">Open Sheet</button>
+        <button id="refreshBtn" class="btn hidden" type="button">Refresh</button>
+        <button id="logoutBtn" class="btn hidden" type="button">Sign out</button>
+      </div>
+    </header>
+
+    <main id="loginView" class="login">
+      <section class="login-card">
+        <h2>Radio attendance</h2>
+        <p>Sign in with Google. The site will create or open one Google Sheet for kids, daily periods, and attendance.</p>
+        <button id="loginBtn" class="btn primary" type="button">Sign in with Google</button>
+        <div id="loginStatus" class="status"></div>
+      </section>
+    </main>
+
+    <main id="appView" class="workspace hidden">
+      <nav class="sidebar" aria-label="Views">
+        <button class="nav-btn active" type="button" data-view="calendar">
+          <strong>Calendar</strong>
+          <span>9 weeks from this week</span>
+        </button>
+        <button class="nav-btn" type="button" data-view="kids">
+          <strong>Kids</strong>
+          <span>Spreadsheet-style entry</span>
+        </button>
+        <button class="nav-btn" type="button" data-view="files">
+          <strong>Kid files</strong>
+          <span>History by student</span>
+        </button>
+      </nav>
+
+      <section class="content">
+        <div id="calendarPanel" class="view">
+          <div class="view-head">
+            <div class="view-title">
+              <h2>Calendar</h2>
+              <p id="selectedDateLabel"></p>
+            </div>
+            <div class="row">
+              <button id="todayBtn" class="btn" type="button">Today</button>
+              <button id="saveAttendanceBtn" class="btn primary" type="button">Save attendance</button>
+            </div>
+          </div>
+
+          <div id="calendarGrid" class="calendar-grid"></div>
+
+          <div class="grid-2">
+            <section class="panel">
+              <div class="row between">
+                <div>
+                  <h3 style="margin:0 0 4px">Attendance</h3>
+                  <p class="muted">Check each kid under the period they attended.</p>
+                </div>
+                <span id="attendanceCount" class="pill">0 records</span>
+              </div>
+              <div id="attendanceWrap" class="table-wrap" style="margin-top:12px"></div>
+            </section>
+
+            <section class="panel">
+              <h3 style="margin:0 0 4px">Periods for the day</h3>
+              <p class="muted">Paste the paper list here, one period per line. Examples: <strong>1</strong>, <strong>Period 2</strong>, or <strong>9:00-9:45 News</strong>.</p>
+              <div class="form-grid" style="margin-top:12px">
+                <textarea id="periodsInput" placeholder="Period 1&#10;Period 2&#10;Period 3"></textarea>
+                <button id="savePeriodsBtn" class="btn primary" type="button">Save periods</button>
+                <div id="calendarStatus" class="status"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div id="kidsPanel" class="view hidden">
+          <div class="view-head">
+            <div class="view-title">
+              <h2>Kids</h2>
+              <p>Add one kid per line, or paste rows from a spreadsheet.</p>
+            </div>
+            <span id="kidsCount" class="pill">0 kids</span>
+          </div>
+
+          <div class="grid-2">
+            <section class="panel">
+              <h3 style="margin:0 0 10px">Paste kids</h3>
+              <div class="form-grid">
+                <textarea id="bulkKidsInput" placeholder="Name&#9;Grade&#9;Contact&#9;Notes&#10;Ana Garcia&#9;6&#9;Parent email&#9;Anchor"></textarea>
+                <button id="addBulkKidsBtn" class="btn primary" type="button">Add kids</button>
+                <div id="kidsStatus" class="status"></div>
+              </div>
+            </section>
+            <section class="panel">
+              <h3 style="margin:0 0 10px">Add one kid</h3>
+              <div class="form-grid">
+                <label>Name <input id="kidNameInput" autocomplete="off"></label>
+                <label>Grade <input id="kidGradeInput" autocomplete="off"></label>
+                <label>Contact <input id="kidContactInput" autocomplete="off"></label>
+                <label>Notes <textarea id="kidNotesInput" style="min-height:76px"></textarea></label>
+                <button id="addKidBtn" class="btn primary" type="button">Add kid</button>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel tight">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Name</th><th>Grade</th><th>Contact</th><th>Notes</th><th>Added</th><th></th></tr></thead>
+                <tbody id="kidsTableBody"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+        <div id="filesPanel" class="view hidden">
+          <div class="view-head">
+            <div class="view-title">
+              <h2>Kid file view</h2>
+              <p>Pick a kid to see every date and period recorded for them.</p>
+            </div>
+            <input id="kidSearchInput" style="max-width:320px" type="search" placeholder="Search kid">
+          </div>
+
+          <div class="kid-file">
+            <section class="panel">
+              <div id="kidFileList" class="kid-list"></div>
+            </section>
+            <section class="panel">
+              <div id="kidFileDetail"></div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const GOOGLE_CLIENT_ID = "435784295430-cmug30o42f1vu4ijgor9sjb0ro4oo37o.apps.googleusercontent.com";
+    const GOOGLE_SCOPE = [
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/spreadsheets"
+    ].join(" ");
+    const WORKBOOK_NAME = "Greylock Radio Attendance";
+    const SHEETS = Object.freeze({
+      kids: "Kids",
+      periods: "Periods",
+      attendance: "Attendance"
+    });
+    const HEADERS = Object.freeze({
+      kids: ["Kid ID", "Name", "Grade", "Contact", "Notes", "Created At"],
+      periods: ["Date", "Period", "Start", "End", "Notes", "Updated At"],
+      attendance: ["Date", "Period", "Kid ID", "Kid Name", "Notes", "Created At"]
+    });
+    const TOKEN_FRESH_MS = 60000;
+    const els = {};
+    const state = {
+      tokenClient: null,
+      accessToken: "",
+      accessTokenExpiresAt: 0,
+      spreadsheetId: "",
+      spreadsheetUrl: "",
+      currentUser: null,
+      selectedDate: toISODate(new Date()),
+      kids: [],
+      periods: [],
+      attendance: [],
+      selectedKidId: "",
+      activeView: "calendar"
+    };
+
+    function $(id) { return document.getElementById(id); }
+    function cacheEls() {
+      [
+        "loginView", "appView", "loginBtn", "loginStatus", "userChip", "userPhoto", "userName",
+        "openSheetBtn", "refreshBtn", "logoutBtn", "workbookLabel", "calendarGrid",
+        "selectedDateLabel", "todayBtn", "saveAttendanceBtn", "attendanceWrap", "attendanceCount",
+        "periodsInput", "savePeriodsBtn", "calendarStatus", "kidsCount", "bulkKidsInput",
+        "addBulkKidsBtn", "kidsStatus", "kidNameInput", "kidGradeInput", "kidContactInput",
+        "kidNotesInput", "addKidBtn", "kidsTableBody", "kidSearchInput", "kidFileList",
+        "kidFileDetail", "calendarPanel", "kidsPanel", "filesPanel"
+      ].forEach(function (id) { els[id] = $(id); });
+    }
+    function setStatus(el, text, kind) {
+      el.textContent = text || "";
+      el.className = "status" + (kind ? " " + kind : "");
+    }
+    function setBusy(isBusy) {
+      document.querySelectorAll("button, input, textarea, select").forEach(function (el) {
+        if (el.id === "logoutBtn") return;
+        el.disabled = !!isBusy;
+      });
+    }
+    function escapeHtml(value) {
+      return String(value == null ? "" : value).replace(/[&<>"']/g, function (ch) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
+      });
+    }
+    function toISODate(date) {
+      const local = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const offset = local.getTimezoneOffset() * 60000;
+      return new Date(local.getTime() - offset).toISOString().slice(0, 10);
+    }
+    function parseISODate(value) {
+      const parts = String(value || "").split("-").map(Number);
+      return new Date(parts[0] || 1970, (parts[1] || 1) - 1, parts[2] || 1);
+    }
+    function startOfWeek(date) {
+      const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const day = d.getDay();
+      d.setDate(d.getDate() - day);
+      return d;
+    }
+    function formatDateLabel(iso) {
+      return parseISODate(iso).toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+        year: "numeric"
+      });
+    }
+    function quoteSheetName(name) {
+      return "'" + String(name).replace(/'/g, "''") + "'";
+    }
+    function valuesUrl(range) {
+      return "https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) +
+        "/values/" + encodeURIComponent(range);
+    }
+    function messageFromError(err, fallback) {
+      const raw = err && err.message ? err.message : "";
+      if (/invalid_grant|popup|access_denied/i.test(raw)) return "Google sign-in was not completed.";
+      if (/403|insufficient|permission/i.test(raw)) return "Google rejected the permission request. Sign out and sign in again.";
+      if (/404/i.test(raw)) return "The Google Sheet could not be found.";
+      return raw || fallback || "Something went wrong.";
+    }
+    function initGoogle() {
+      if (!window.google || !google.accounts || !google.accounts.oauth2) {
+        setTimeout(initGoogle, 200);
+        return;
+      }
+      state.tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: GOOGLE_SCOPE,
+        include_granted_scopes: true,
+        callback: function () {}
+      });
+      setStatus(els.loginStatus, "");
+    }
+    function ensureAccessToken(interactive) {
+      if (state.accessToken && Date.now() < state.accessTokenExpiresAt - TOKEN_FRESH_MS) {
+        return Promise.resolve(state.accessToken);
+      }
+      if (!state.tokenClient) return Promise.reject(new Error("Google sign-in is still loading."));
+      return new Promise(function (resolve, reject) {
+        state.tokenClient.callback = function (resp) {
+          if (!resp || resp.error || !resp.access_token) {
+            reject(new Error((resp && (resp.error_description || resp.error)) || "Google sign-in failed."));
+            return;
+          }
+          state.accessToken = resp.access_token;
+          state.accessTokenExpiresAt = Date.now() + ((Number(resp.expires_in) || 3600) * 1000);
+          resolve(state.accessToken);
+        };
+        try {
+          state.tokenClient.requestAccessToken({ prompt: interactive ? "consent" : "" });
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
+    function fetchJson(url, options) {
+      return ensureAccessToken(false).then(function (token) {
+        const opts = options || {};
+        const headers = Object.assign({}, opts.headers || {}, { Authorization: "Bearer " + token });
+        return fetch(url, Object.assign({}, opts, { headers: headers })).then(function (res) {
+          return res.text().then(function (text) {
+            let data = null;
+            if (text) {
+              try { data = JSON.parse(text); } catch (err) { data = text; }
+            }
+            if (!res.ok) {
+              const detail = data && data.error && (data.error.message || data.error.status);
+              throw new Error("Google API " + res.status + (detail ? ": " + detail : ""));
+            }
+            return data || {};
+          });
+        });
+      });
+    }
+    function loadProfile() {
+      return fetchJson("https://www.googleapis.com/drive/v3/about?fields=user(displayName,emailAddress,photoLink)").then(function (data) {
+        state.currentUser = data.user || null;
+        if (state.currentUser) {
+          els.userName.textContent = state.currentUser.displayName || state.currentUser.emailAddress || "Google account";
+          els.userPhoto.src = state.currentUser.photoLink || "";
+          els.userChip.classList.remove("hidden");
+        }
+      });
+    }
+    function findWorkbook() {
+      const q = [
+        "name = '" + WORKBOOK_NAME.replace(/'/g, "\\'") + "'",
+        "mimeType = 'application/vnd.google-apps.spreadsheet'",
+        "trashed = false"
+      ].join(" and ");
+      const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) +
+        "&pageSize=10&fields=files(id,name,webViewLink,modifiedTime)&orderBy=modifiedTime desc";
+      return fetchJson(url).then(function (data) {
+        return data.files && data.files.length ? data.files[0] : null;
+      });
+    }
+    function createWorkbook() {
+      const body = {
+        properties: { title: WORKBOOK_NAME },
+        sheets: [
+          { properties: { title: SHEETS.kids } },
+          { properties: { title: SHEETS.periods } },
+          { properties: { title: SHEETS.attendance } }
+        ]
+      };
+      return fetchJson("https://sheets.googleapis.com/v4/spreadsheets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      }).then(function (data) {
+        return {
+          id: data.spreadsheetId,
+          name: WORKBOOK_NAME,
+          webViewLink: data.spreadsheetUrl
+        };
+      });
+    }
+    function ensureWorkbook() {
+      return findWorkbook().then(function (file) {
+        return file || createWorkbook();
+      }).then(function (file) {
+        state.spreadsheetId = file.id;
+        state.spreadsheetUrl = file.webViewLink || ("https://docs.google.com/spreadsheets/d/" + file.id + "/edit");
+        els.workbookLabel.textContent = WORKBOOK_NAME;
+        els.openSheetBtn.classList.remove("hidden");
+        return ensureHeaders();
+      });
+    }
+    function ensureHeaders() {
+      return readAllSheets().then(function () {
+        const updates = [];
+        if (!state.kids._hasHeader) updates.push({ range: quoteSheetName(SHEETS.kids) + "!A1:F1", values: [HEADERS.kids] });
+        if (!state.periods._hasHeader) updates.push({ range: quoteSheetName(SHEETS.periods) + "!A1:F1", values: [HEADERS.periods] });
+        if (!state.attendance._hasHeader) updates.push({ range: quoteSheetName(SHEETS.attendance) + "!A1:F1", values: [HEADERS.attendance] });
+        if (!updates.length) return true;
+        return fetchJson("https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) + "/values:batchUpdate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ valueInputOption: "RAW", data: updates })
+        }).then(function () { return readAllSheets(); });
+      });
+    }
+    function normalizeRows(values, headers) {
+      const rows = Array.isArray(values) ? values : [];
+      const first = rows[0] || [];
+      const hasHeader = headers.every(function (h, i) { return String(first[i] || "").trim() === h; });
+      const dataRows = hasHeader ? rows.slice(1) : rows;
+      return { hasHeader: hasHeader, rows: dataRows };
+    }
+    function readAllSheets() {
+      if (!state.spreadsheetId) return Promise.resolve();
+      const ranges = [
+        quoteSheetName(SHEETS.kids) + "!A:F",
+        quoteSheetName(SHEETS.periods) + "!A:F",
+        quoteSheetName(SHEETS.attendance) + "!A:F"
+      ];
+      return fetchJson("https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) +
+        "/values:batchGet?ranges=" + ranges.map(encodeURIComponent).join("&ranges=")).then(function (data) {
+        const vr = data.valueRanges || [];
+        const kids = normalizeRows((vr[0] && vr[0].values) || [], HEADERS.kids);
+        const periods = normalizeRows((vr[1] && vr[1].values) || [], HEADERS.periods);
+        const attendance = normalizeRows((vr[2] && vr[2].values) || [], HEADERS.attendance);
+        state.kids = kids.rows.filter(function (r) { return r[0] || r[1]; }).map(rowToKid);
+        state.periods = periods.rows.filter(function (r) { return r[0] && r[1]; }).map(rowToPeriod);
+        state.attendance = attendance.rows.filter(function (r) { return r[0] && r[1] && (r[2] || r[3]); }).map(rowToAttendance);
+        state.kids._hasHeader = kids.hasHeader;
+        state.periods._hasHeader = periods.hasHeader;
+        state.attendance._hasHeader = attendance.hasHeader;
+      });
+    }
+    function rowToKid(r) {
+      return { id: r[0] || makeKidId(r[1]), name: r[1] || "", grade: r[2] || "", contact: r[3] || "", notes: r[4] || "", createdAt: r[5] || "" };
+    }
+    function rowToPeriod(r) {
+      return { date: r[0] || "", label: r[1] || "", start: r[2] || "", end: r[3] || "", notes: r[4] || "", updatedAt: r[5] || "" };
+    }
+    function rowToAttendance(r) {
+      return { date: r[0] || "", period: r[1] || "", kidId: r[2] || "", kidName: r[3] || "", notes: r[4] || "", createdAt: r[5] || "" };
+    }
+    function makeKidId(name) {
+      const clean = String(name || "kid").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 30) || "kid";
+      return clean + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    }
+    function appendRows(sheetName, rows) {
+      if (!rows.length) return Promise.resolve();
+      return fetchJson(valuesUrl(quoteSheetName(sheetName) + "!A1") + ":append?valueInputOption=RAW&insertDataOption=INSERT_ROWS", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ values: rows })
+      });
+    }
+    function rewriteSheet(sheetName, headers, rows) {
+      const range = quoteSheetName(sheetName) + "!A:F";
+      return fetchJson(valuesUrl(range) + ":clear", { method: "POST" }).then(function () {
+        return fetchJson(valuesUrl(quoteSheetName(sheetName) + "!A1") + "?valueInputOption=RAW", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ values: [headers].concat(rows) })
+        });
+      });
+    }
+    function kidToRow(kid) { return [kid.id, kid.name, kid.grade, kid.contact, kid.notes, kid.createdAt]; }
+    function periodToRow(period) { return [period.date, period.label, period.start, period.end, period.notes, period.updatedAt]; }
+    function attendanceToRow(item) { return [item.date, item.period, item.kidId, item.kidName, item.notes, item.createdAt]; }
+    function parseKidLines(text) {
+      const existing = new Set(state.kids.map(function (k) { return k.name.trim().toLowerCase(); }));
+      return String(text || "").split(/\r?\n/).map(function (line) {
+        const parts = line.split(/\t|,/).map(function (p) { return p.trim(); });
+        return { name: parts[0] || "", grade: parts[1] || "", contact: parts[2] || "", notes: parts.slice(3).join(", ") };
+      }).filter(function (kid) {
+        const key = kid.name.trim().toLowerCase();
+        if (!key || /^name$/i.test(key) || existing.has(key)) return false;
+        existing.add(key);
+        return true;
+      });
+    }
+    function addKids(kids) {
+      const now = new Date().toISOString();
+      const complete = kids.map(function (kid) {
+        return Object.assign({ id: makeKidId(kid.name), createdAt: now }, kid);
+      });
+      return appendRows(SHEETS.kids, complete.map(kidToRow)).then(function () {
+        state.kids = state.kids.concat(complete).sort(function (a, b) { return a.name.localeCompare(b.name); });
+        renderAll();
+        return complete.length;
+      });
+    }
+    function parsePeriodLines(text) {
+      return String(text || "").split(/\r?\n/).map(function (line) {
+        const raw = line.trim();
+        if (!raw) return null;
+        const match = raw.match(/^(\d{1,2}:?\d{0,2}\s*(?:am|pm)?)\s*[-–]\s*(\d{1,2}:?\d{0,2}\s*(?:am|pm)?)(?:\s+(.+))?$/i);
+        if (match) return { label: (match[3] || (match[1] + "-" + match[2])).trim(), start: match[1].trim(), end: match[2].trim(), notes: "" };
+        return { label: raw, start: "", end: "", notes: "" };
+      }).filter(Boolean);
+    }
+    function periodsForDate(iso) {
+      return state.periods.filter(function (p) { return p.date === iso; });
+    }
+    function attendanceForDate(iso) {
+      return state.attendance.filter(function (a) { return a.date === iso; });
+    }
+    function savePeriodsForSelectedDate() {
+      const parsed = parsePeriodLines(els.periodsInput.value);
+      if (!parsed.length) {
+        setStatus(els.calendarStatus, "Add at least one period for this date.", "warn");
+        return;
+      }
+      const now = new Date().toISOString();
+      const nextForDay = parsed.map(function (p) {
+        return Object.assign({ date: state.selectedDate, updatedAt: now }, p);
+      });
+      state.periods = state.periods.filter(function (p) { return p.date !== state.selectedDate; }).concat(nextForDay);
+      setBusy(true);
+      rewriteSheet(SHEETS.periods, HEADERS.periods, state.periods.map(periodToRow)).then(function () {
+        setStatus(els.calendarStatus, "Periods saved.", "good");
+        renderAll();
+      }).catch(function (err) {
+        setStatus(els.calendarStatus, messageFromError(err, "Could not save periods."), "bad");
+      }).finally(function () { setBusy(false); });
+    }
+    function saveAttendanceForSelectedDate() {
+      const periods = periodsForDate(state.selectedDate);
+      if (!periods.length) {
+        setStatus(els.calendarStatus, "Save periods before attendance.", "warn");
+        return;
+      }
+      const now = new Date().toISOString();
+      const checked = Array.from(document.querySelectorAll("[data-attendance-check]:checked")).map(function (box) {
+        const kid = state.kids.find(function (k) { return k.id === box.dataset.kidId; }) || {};
+        return {
+          date: state.selectedDate,
+          period: box.dataset.period || "",
+          kidId: box.dataset.kidId || "",
+          kidName: kid.name || box.dataset.kidName || "",
+          notes: "",
+          createdAt: now
+        };
+      });
+      state.attendance = state.attendance.filter(function (a) { return a.date !== state.selectedDate; }).concat(checked);
+      setBusy(true);
+      rewriteSheet(SHEETS.attendance, HEADERS.attendance, state.attendance.map(attendanceToRow)).then(function () {
+        setStatus(els.calendarStatus, "Attendance saved.", "good");
+        renderAll();
+      }).catch(function (err) {
+        setStatus(els.calendarStatus, messageFromError(err, "Could not save attendance."), "bad");
+      }).finally(function () { setBusy(false); });
+    }
+    function renderAll() {
+      renderCalendar();
+      renderPeriodsInput();
+      renderAttendanceMatrix();
+      renderKids();
+      renderKidFiles();
+    }
+    function renderCalendar() {
+      const selected = parseISODate(state.selectedDate);
+      const start = startOfWeek(selected);
+      const today = toISODate(new Date());
+      const dows = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      let html = dows.map(function (d) { return '<div class="dow">' + d + '</div>'; }).join("");
+      for (let i = 0; i < 63; i++) {
+        const date = new Date(start);
+        date.setDate(start.getDate() + i);
+        const iso = toISODate(date);
+        const records = attendanceForDate(iso).length;
+        const periodCount = periodsForDate(iso).length;
+        const classes = ["day"];
+        if (iso === state.selectedDate) classes.push("selected");
+        if (iso === today) classes.push("today");
+        html += '<button class="' + classes.join(" ") + '" type="button" data-date="' + iso + '">' +
+          '<span class="day-number">' + date.getDate() + '</span>' +
+          '<span class="day-meta">' +
+          '<span>' + periodCount + ' periods</span>' +
+          '<span>' + records + ' attendance</span>' +
+          '</span></button>';
+      }
+      els.calendarGrid.innerHTML = html;
+      els.selectedDateLabel.textContent = formatDateLabel(state.selectedDate);
+      els.attendanceCount.textContent = attendanceForDate(state.selectedDate).length + " records";
+    }
+    function renderPeriodsInput() {
+      els.periodsInput.value = periodsForDate(state.selectedDate).map(function (p) {
+        const time = p.start || p.end ? (p.start + (p.end ? "-" + p.end : "")) + " " : "";
+        return time + p.label;
+      }).join("\n");
+    }
+    function renderAttendanceMatrix() {
+      const periods = periodsForDate(state.selectedDate);
+      if (!state.kids.length) {
+        els.attendanceWrap.innerHTML = '<div class="empty">Add kids first.</div>';
+        return;
+      }
+      if (!periods.length) {
+        els.attendanceWrap.innerHTML = '<div class="empty">Add periods for this date first.</div>';
+        return;
+      }
+      const existing = new Set(attendanceForDate(state.selectedDate).map(function (a) {
+        return a.kidId + "::" + a.period;
+      }));
+      let html = '<table class="attendance-matrix"><thead><tr><th>Kid</th>' +
+        periods.map(function (p) { return '<th>' + escapeHtml(p.label) + '</th>'; }).join("") +
+        '</tr></thead><tbody>';
+      state.kids.forEach(function (kid) {
+        html += '<tr><td><button class="kid-link" type="button" data-open-kid="' + escapeHtml(kid.id) + '">' + escapeHtml(kid.name) + '</button></td>';
+        periods.forEach(function (period) {
+          const key = kid.id + "::" + period.label;
+          html += '<td class="check-cell"><input type="checkbox" data-attendance-check data-kid-id="' + escapeHtml(kid.id) +
+            '" data-kid-name="' + escapeHtml(kid.name) + '" data-period="' + escapeHtml(period.label) + '"' +
+            (existing.has(key) ? " checked" : "") + '></td>';
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      els.attendanceWrap.innerHTML = html;
+    }
+    function renderKids() {
+      els.kidsCount.textContent = state.kids.length + (state.kids.length === 1 ? " kid" : " kids");
+      if (!state.kids.length) {
+        els.kidsTableBody.innerHTML = '<tr><td colspan="6" class="empty">No kids added yet.</td></tr>';
+        return;
+      }
+      els.kidsTableBody.innerHTML = state.kids.map(function (kid) {
+        return '<tr><td><button class="kid-link" type="button" data-open-kid="' + escapeHtml(kid.id) + '">' + escapeHtml(kid.name) + '</button></td>' +
+          '<td>' + escapeHtml(kid.grade) + '</td><td>' + escapeHtml(kid.contact) + '</td><td>' + escapeHtml(kid.notes) + '</td>' +
+          '<td>' + escapeHtml(kid.createdAt ? new Date(kid.createdAt).toLocaleDateString() : "") + '</td>' +
+          '<td class="actions"><button class="btn danger" type="button" data-delete-kid="' + escapeHtml(kid.id) + '">Delete</button></td></tr>';
+      }).join("");
+    }
+    function renderKidFiles() {
+      const query = String(els.kidSearchInput.value || "").trim().toLowerCase();
+      const kids = state.kids.filter(function (kid) { return !query || kid.name.toLowerCase().includes(query); });
+      if (!state.selectedKidId && state.kids.length) state.selectedKidId = state.kids[0].id;
+      els.kidFileList.innerHTML = kids.length ? kids.map(function (kid) {
+        const records = state.attendance.filter(function (a) { return a.kidId === kid.id || (!a.kidId && a.kidName === kid.name); });
+        return '<button class="kid-item ' + (kid.id === state.selectedKidId ? "active" : "") + '" type="button" data-select-kid="' + escapeHtml(kid.id) + '">' +
+          '<strong>' + escapeHtml(kid.name) + '</strong><span class="muted">' + records.length + ' records</span></button>';
+      }).join("") : '<div class="empty">No matching kids.</div>';
+      renderKidDetail();
+    }
+    function renderKidDetail() {
+      const kid = state.kids.find(function (k) { return k.id === state.selectedKidId; });
+      if (!kid) {
+        els.kidFileDetail.innerHTML = '<div class="empty">Select a kid.</div>';
+        return;
+      }
+      const records = state.attendance
+        .filter(function (a) { return a.kidId === kid.id || (!a.kidId && a.kidName === kid.name); })
+        .sort(function (a, b) { return (b.date + b.period).localeCompare(a.date + a.period); });
+      const uniqueDays = new Set(records.map(function (r) { return r.date; })).size;
+      const recent = records[0] ? formatDateLabel(records[0].date) : "No attendance yet";
+      let html = '<div class="view-title"><h2>' + escapeHtml(kid.name) + '</h2><p>' +
+        [kid.grade && "Grade " + kid.grade, kid.contact, kid.notes].filter(Boolean).map(escapeHtml).join(" | ") +
+        '</p></div><div class="kid-stats" style="margin:14px 0">' +
+        '<div class="stat"><strong>' + records.length + '</strong><span class="muted">Periods</span></div>' +
+        '<div class="stat"><strong>' + uniqueDays + '</strong><span class="muted">Days</span></div>' +
+        '<div class="stat"><strong style="font-size:1rem">' + escapeHtml(recent) + '</strong><span class="muted">Most recent</span></div></div>';
+      if (!records.length) {
+        html += '<div class="empty">No attendance has been saved for this kid.</div>';
+      } else {
+        html += '<div class="table-wrap"><table><thead><tr><th>Date</th><th>Period</th><th>Notes</th><th>Saved</th></tr></thead><tbody>' +
+          records.map(function (r) {
+            return '<tr><td>' + escapeHtml(formatDateLabel(r.date)) + '</td><td>' + escapeHtml(r.period) + '</td><td>' + escapeHtml(r.notes) + '</td><td>' + escapeHtml(r.createdAt ? new Date(r.createdAt).toLocaleString() : "") + '</td></tr>';
+          }).join("") + '</tbody></table></div>';
+      }
+      els.kidFileDetail.innerHTML = html;
+    }
+    function switchView(view) {
+      state.activeView = view;
+      document.querySelectorAll(".nav-btn").forEach(function (btn) {
+        btn.classList.toggle("active", btn.dataset.view === view);
+      });
+      els.calendarPanel.classList.toggle("hidden", view !== "calendar");
+      els.kidsPanel.classList.toggle("hidden", view !== "kids");
+      els.filesPanel.classList.toggle("hidden", view !== "files");
+      if (view === "files") renderKidFiles();
+    }
+    function openKidFile(kidId) {
+      state.selectedKidId = kidId;
+      switchView("files");
+      renderKidFiles();
+    }
+    function deleteKid(kidId) {
+      const kid = state.kids.find(function (k) { return k.id === kidId; });
+      if (!kid || !confirm("Delete " + kid.name + " from the kid list? Existing attendance records stay in the Attendance sheet.")) return;
+      state.kids = state.kids.filter(function (k) { return k.id !== kidId; });
+      if (state.selectedKidId === kidId) state.selectedKidId = state.kids[0] ? state.kids[0].id : "";
+      setBusy(true);
+      rewriteSheet(SHEETS.kids, HEADERS.kids, state.kids.map(kidToRow)).then(function () {
+        renderAll();
+        setStatus(els.kidsStatus, "Kid deleted.", "good");
+      }).catch(function (err) {
+        setStatus(els.kidsStatus, messageFromError(err, "Could not delete kid."), "bad");
+      }).finally(function () { setBusy(false); });
+    }
+    function signIn() {
+      setStatus(els.loginStatus, "Opening Google sign-in...");
+      setBusy(true);
+      ensureAccessToken(true).then(function () {
+        setStatus(els.loginStatus, "Preparing your attendance sheet...");
+        return loadProfile();
+      }).then(ensureWorkbook).then(readAllSheets).then(function () {
+        els.loginView.classList.add("hidden");
+        els.appView.classList.remove("hidden");
+        els.refreshBtn.classList.remove("hidden");
+        els.logoutBtn.classList.remove("hidden");
+        renderAll();
+      }).catch(function (err) {
+        setStatus(els.loginStatus, messageFromError(err, "Could not sign in."), "bad");
+      }).finally(function () { setBusy(false); });
+    }
+    function refreshData() {
+      setBusy(true);
+      readAllSheets().then(function () {
+        renderAll();
+        setStatus(els.calendarStatus, "Refreshed.", "good");
+      }).catch(function (err) {
+        setStatus(els.calendarStatus, messageFromError(err, "Could not refresh."), "bad");
+      }).finally(function () { setBusy(false); });
+    }
+    function logout() {
+      if (state.accessToken && window.google && google.accounts && google.accounts.oauth2) {
+        google.accounts.oauth2.revoke(state.accessToken, function () {});
+      }
+      state.accessToken = "";
+      state.accessTokenExpiresAt = 0;
+      state.spreadsheetId = "";
+      state.currentUser = null;
+      els.appView.classList.add("hidden");
+      els.loginView.classList.remove("hidden");
+      els.userChip.classList.add("hidden");
+      els.openSheetBtn.classList.add("hidden");
+      els.refreshBtn.classList.add("hidden");
+      els.logoutBtn.classList.add("hidden");
+      setStatus(els.loginStatus, "");
+    }
+    function bindEvents() {
+      els.loginBtn.addEventListener("click", signIn);
+      els.logoutBtn.addEventListener("click", logout);
+      els.refreshBtn.addEventListener("click", refreshData);
+      els.openSheetBtn.addEventListener("click", function () {
+        if (state.spreadsheetUrl) window.open(state.spreadsheetUrl, "_blank", "noopener");
+      });
+      document.querySelectorAll(".nav-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () { switchView(btn.dataset.view); });
+      });
+      els.calendarGrid.addEventListener("click", function (event) {
+        const day = event.target.closest("[data-date]");
+        if (!day) return;
+        state.selectedDate = day.dataset.date;
+        setStatus(els.calendarStatus, "");
+        renderAll();
+      });
+      els.todayBtn.addEventListener("click", function () {
+        state.selectedDate = toISODate(new Date());
+        renderAll();
+      });
+      els.savePeriodsBtn.addEventListener("click", savePeriodsForSelectedDate);
+      els.saveAttendanceBtn.addEventListener("click", saveAttendanceForSelectedDate);
+      els.addBulkKidsBtn.addEventListener("click", function () {
+        const kids = parseKidLines(els.bulkKidsInput.value);
+        if (!kids.length) {
+          setStatus(els.kidsStatus, "No new kids found in the pasted list.", "warn");
+          return;
+        }
+        setBusy(true);
+        addKids(kids).then(function (count) {
+          els.bulkKidsInput.value = "";
+          setStatus(els.kidsStatus, count + " kids added.", "good");
+        }).catch(function (err) {
+          setStatus(els.kidsStatus, messageFromError(err, "Could not add kids."), "bad");
+        }).finally(function () { setBusy(false); });
+      });
+      els.addKidBtn.addEventListener("click", function () {
+        const kid = {
+          name: els.kidNameInput.value.trim(),
+          grade: els.kidGradeInput.value.trim(),
+          contact: els.kidContactInput.value.trim(),
+          notes: els.kidNotesInput.value.trim()
+        };
+        if (!kid.name) {
+          setStatus(els.kidsStatus, "Name is required.", "warn");
+          return;
+        }
+        setBusy(true);
+        addKids([kid]).then(function () {
+          els.kidNameInput.value = "";
+          els.kidGradeInput.value = "";
+          els.kidContactInput.value = "";
+          els.kidNotesInput.value = "";
+          setStatus(els.kidsStatus, "Kid added.", "good");
+        }).catch(function (err) {
+          setStatus(els.kidsStatus, messageFromError(err, "Could not add kid."), "bad");
+        }).finally(function () { setBusy(false); });
+      });
+      document.addEventListener("click", function (event) {
+        const openKid = event.target.closest("[data-open-kid]");
+        if (openKid) {
+          openKidFile(openKid.dataset.openKid);
+          return;
+        }
+        const selectKid = event.target.closest("[data-select-kid]");
+        if (selectKid) {
+          state.selectedKidId = selectKid.dataset.selectKid;
+          renderKidFiles();
+          return;
+        }
+        const deleteBtn = event.target.closest("[data-delete-kid]");
+        if (deleteBtn) deleteKid(deleteBtn.dataset.deleteKid);
+      });
+      els.kidSearchInput.addEventListener("input", renderKidFiles);
+    }
+    cacheEls();
+    bindEvents();
+    initGoogle();
+  </script>
 </body>
 </html>
