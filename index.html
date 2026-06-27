@@ -265,9 +265,23 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       gap: 12px;
+      align-items: end;
     }
     .project-card h4 { margin: 0 0 5px; font-size: 1rem; }
     .project-card p { margin: 0; color: var(--muted); font-size: .86rem; }
+    .project-edit-grid {
+      display: grid;
+      grid-template-columns: minmax(170px, 1fr) 150px 150px;
+      gap: 10px;
+      min-width: 0;
+    }
+    .project-actions {
+      display: flex;
+      align-items: end;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
     .empty {
       padding: 22px;
       color: var(--muted);
@@ -286,7 +300,8 @@
     @media (max-width: 980px) {
       .workspace { grid-template-columns: 1fr; }
       .kid-list { max-height: none; }
-      .form-row, .project-form { grid-template-columns: 1fr; }
+      .form-row, .project-form, .project-card, .project-edit-grid { grid-template-columns: 1fr; }
+      .project-actions { justify-content: flex-start; }
     }
     @media (max-width: 640px) {
       .topbar { align-items: flex-start; }
@@ -778,10 +793,16 @@
         return;
       }
       els.projectsList.innerHTML = projects.map(function (project) {
-        const dates = [project.startDate || "No start", project.endDate || "No end"].join(" to ");
         return '<article class="project-card">' +
-          '<div><h4>' + escapeHtml(project.name || "Untitled project") + '</h4><p>' + escapeHtml(dates) + '</p></div>' +
+          '<div class="project-edit-grid">' +
+          '<label>Project<input data-project-field="name" data-project-id="' + escapeHtml(project.id) + '" value="' + escapeHtml(project.name || "") + '" placeholder="Project name"></label>' +
+          '<label>Start<input data-project-field="startDate" data-project-id="' + escapeHtml(project.id) + '" type="date" value="' + escapeHtml(project.startDate || "") + '"></label>' +
+          '<label>End optional<input data-project-field="endDate" data-project-id="' + escapeHtml(project.id) + '" type="date" value="' + escapeHtml(project.endDate || "") + '"></label>' +
+          '</div>' +
+          '<div class="project-actions">' +
+          '<button class="btn primary" type="button" data-save-project="' + escapeHtml(project.id) + '">Save</button>' +
           '<button class="btn danger" type="button" data-delete-project="' + escapeHtml(project.id) + '">Remove</button>' +
+          '</div>' +
           '</article>';
       }).join("");
     }
@@ -891,6 +912,32 @@
         setStatus(els.fileStatus, messageFromError(err, "Could not remove project."), "bad");
       }).finally(function () { setBusy(false); });
     }
+    function saveProject(projectId) {
+      const project = state.projects.find(function (item) { return item.id === projectId; });
+      if (!project) return;
+      const fields = Array.from(document.querySelectorAll("[data-project-id]")).filter(function (field) {
+        return field.dataset.projectId === projectId;
+      });
+      const next = {};
+      fields.forEach(function (field) {
+        next[field.dataset.projectField] = field.value.trim();
+      });
+      if (!next.name) {
+        setStatus(els.fileStatus, "Project name is required.", "warn");
+        return;
+      }
+      project.name = next.name;
+      project.startDate = next.startDate || "";
+      project.endDate = next.endDate || "";
+      project.updatedAt = new Date().toISOString();
+      setBusy(true);
+      rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H").then(function () {
+        setStatus(els.fileStatus, "Project saved.", "good");
+        renderAll();
+      }).catch(function (err) {
+        setStatus(els.fileStatus, messageFromError(err, "Could not save project."), "bad");
+      }).finally(function () { setBusy(false); });
+    }
     function signIn() {
       setStatus(els.loginStatus, "Opening Google sign-in...");
       setBusy(true);
@@ -961,7 +1008,12 @@
           return;
         }
         const deleteProjectBtn = event.target.closest("[data-delete-project]");
-        if (deleteProjectBtn) deleteProject(deleteProjectBtn.dataset.deleteProject);
+        if (deleteProjectBtn) {
+          deleteProject(deleteProjectBtn.dataset.deleteProject);
+          return;
+        }
+        const saveProjectBtn = event.target.closest("[data-save-project]");
+        if (saveProjectBtn) saveProject(saveProjectBtn.dataset.saveProject);
       });
     }
     cacheEls();
