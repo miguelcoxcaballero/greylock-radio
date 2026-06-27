@@ -368,7 +368,19 @@
                 <input id="kidNameInput" autocomplete="off" placeholder="Kid name">
               </label>
               <label>Division
-                <input id="divisionInput" autocomplete="off" placeholder="Division">
+                <select id="divisionInput">
+                  <option value="">Select division</option>
+                  <option value="Super Scout">Super Scout</option>
+                  <option value="Scout">Scout</option>
+                  <option value="Ranger">Ranger</option>
+                  <option value="Trailblazer">Trailblazer</option>
+                  <option value="Brave">Brave</option>
+                  <option value="Chief">Chief</option>
+                  <option value="Freshman">Freshman</option>
+                  <option value="Sophmore">Sophmore</option>
+                  <option value="Junior">Junior</option>
+                  <option value="Senior Senior">Senior Senior</option>
+                </select>
               </label>
               <label>Side
                 <select id="sideSelect">
@@ -398,7 +410,7 @@
             <label>Start
               <input id="projectStartInput" type="date">
             </label>
-            <label>End
+            <label>End optional
               <input id="projectEndInput" type="date">
             </label>
             <button id="addProjectBtn" class="btn primary" type="button">Add project</button>
