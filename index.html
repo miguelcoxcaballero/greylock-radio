@@ -3,330 +3,280 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src https://*.googleapis.com https://accounts.google.com; img-src 'self' data: https://*.googleusercontent.com; style-src 'self' 'unsafe-inline'; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline' https://accounts.google.com; connect-src https://*.googleapis.com https://accounts.google.com; img-src 'self' data: https://*.googleusercontent.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none';">
   <title>Greylock Radio</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <meta name="theme-color" content="#070707">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <script src="https://accounts.google.com/gsi/client" async defer data-auto_prompt="false"></script>
   <style>
     :root {
       color-scheme: light;
-      --black: #070707;
-      --charcoal: #171717;
+      /* Greylock brand */
       --red: #d71920;
-      --red-dark: #a90910;
-      --cream: #f4efe4;
-      --paper: #fffaf0;
-      --paper-2: #eee3d0;
-      --ink: #16120f;
-      --muted: #71685d;
-      --line: #ddd0bb;
-      --green: #315f43;
-      --bad: #a52222;
-      --shadow: 0 18px 42px rgba(9, 8, 7, 0.16);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--cream);
-      color: var(--ink);
+      --red-dark: #b3151b;
+      --red-container: #fdeaeb;
+      /* Google-style neutrals */
+      --text: #202124;
+      --text-2: #5f6368;
+      --text-3: #80868b;
+      --border: #dadce0;
+      --bg: #f1f3f4;
+      --surface: #ffffff;
+      --surface-2: #f8f9fa;
+      --hover: rgba(60, 64, 67, 0.08);
+      --good: #188038;
+      --warn: #b06000;
+      --bad: #c5221f;
+      --elev-1: 0 1px 2px rgba(60,64,67,.30), 0 1px 3px 1px rgba(60,64,67,.15);
+      --elev-2: 0 1px 2px rgba(60,64,67,.30), 0 2px 6px 2px rgba(60,64,67,.15);
+      --elev-3: 0 1px 3px rgba(60,64,67,.30), 0 4px 8px 3px rgba(60,64,67,.15);
+      font-family: "Roboto", "Helvetica Neue", Arial, sans-serif;
+      font-size: 14px;
+      background: var(--bg);
+      color: var(--text);
     }
     * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        linear-gradient(135deg, rgba(215, 25, 32, .08), transparent 28%),
-        radial-gradient(circle at 80% -10%, rgba(0, 0, 0, .12), transparent 32%),
-        var(--cream);
-    }
-    button, input, textarea, select { font: inherit; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); -webkit-font-smoothing: antialiased; }
+    button, input, textarea, select { font: inherit; color: inherit; }
     button { cursor: pointer; }
     .hidden { display: none !important; }
-    .app { min-height: 100vh; display: grid; grid-template-rows: auto 1fr; }
-    .topbar {
-      min-height: 76px;
-      padding: 12px 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      color: white;
-      background: var(--black);
-      border-bottom: 5px solid var(--red);
-      position: sticky;
-      top: 0;
-      z-index: 10;
+    h1, h2, h3, h4 { font-weight: 500; margin: 0; }
+    .app { min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* ---------- App bar ---------- */
+    .appbar {
+      position: sticky; top: 0; z-index: 20;
+      background: var(--surface);
+      box-shadow: var(--elev-1);
     }
-    .brand {
-      display: grid;
-      gap: 5px;
-      min-width: 0;
+    .appbar-row {
+      height: 64px; padding: 0 16px;
+      display: flex; align-items: center; gap: 16px;
     }
-    .brand-lockup {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      min-width: 0;
-    }
-    .gl-wordmark {
-      height: clamp(22px, 3.4vw, 30px);
-      width: auto;
-      color: #fff;
-      display: block;
-    }
+    .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .gl-wordmark { height: 24px; width: auto; color: var(--text); display: block; }
     .brand-tag {
-      font-size: 0.7rem;
-      font-weight: 900;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: #fff;
-      background: var(--red);
-      padding: 3px 9px 2px;
-      border-radius: 5px;
-      line-height: 1;
-      white-space: nowrap;
+      font-size: 0.66rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+      color: #fff; background: var(--red); padding: 3px 8px 2px; border-radius: 4px; line-height: 1;
     }
-    .brand-sub {
-      color: #b9b1a6;
-      font-size: 0.78rem;
-      letter-spacing: .02em;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .spacer { flex: 1 1 auto; }
+    .appbar-actions { display: flex; align-items: center; gap: 4px; }
+    .icon-btn {
+      width: 40px; height: 40px; border: 0; border-radius: 50%; background: transparent;
+      color: var(--text-2); display: inline-grid; place-items: center; padding: 0;
     }
-    .top-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-    .user-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 9px;
-      border: 1px solid rgba(255,255,255,.18);
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      color: #efe8df;
-      font-size: 0.82rem;
-      max-width: 280px;
+    .icon-btn:hover { background: var(--hover); }
+    .icon-btn svg { width: 22px; height: 22px; fill: currentColor; }
+    .user-chip { display: flex; align-items: center; gap: 8px; padding: 4px 8px 4px 4px; border-radius: 999px; }
+    .user-chip:hover { background: var(--hover); }
+    .user-chip img { width: 32px; height: 32px; border-radius: 50%; background: var(--surface-2); object-fit: cover; }
+    .user-chip span { font-size: 0.86rem; color: var(--text); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ---------- Tabs ---------- */
+    .tabs { display: flex; gap: 4px; padding: 0 12px; border-top: 1px solid var(--border); }
+    .tab {
+      border: 0; background: transparent; color: var(--text-2);
+      height: 48px; padding: 0 18px; display: inline-flex; align-items: center; gap: 8px;
+      font-weight: 500; font-size: 0.88rem; position: relative; letter-spacing: .01em;
     }
-    .user-chip img { width: 26px; height: 26px; border-radius: 50%; background: #333; }
-    .user-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tab svg { width: 20px; height: 20px; fill: currentColor; }
+    .tab:hover { background: var(--hover); border-radius: 8px 8px 0 0; color: var(--text); }
+    .tab.active { color: var(--red); }
+    .tab.active::after {
+      content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px;
+      background: var(--red); border-radius: 3px 3px 0 0;
+    }
+
+    /* ---------- Buttons ---------- */
     .btn {
-      min-height: 40px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: var(--paper);
-      color: var(--ink);
-      padding: 9px 13px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      box-shadow: none;
-      font-weight: 800;
+      height: 40px; border: 0; border-radius: 999px; background: var(--red); color: #fff;
+      padding: 0 24px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      font-weight: 500; font-size: 0.88rem; letter-spacing: .01em; white-space: nowrap;
+      transition: box-shadow .15s ease, background .15s ease;
     }
-    .topbar .btn { border-color: rgba(255,255,255,.2); background: rgba(255,255,255,.08); color: white; }
-    .btn.primary { background: var(--red); border-color: var(--red); color: white; }
-    .btn.primary:hover { background: var(--red-dark); }
-    .btn.ghost { background: transparent; }
-    .btn.danger { color: var(--bad); }
-    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
-    main { min-width: 0; }
-    .login {
-      min-height: calc(100vh - 76px);
-      display: grid;
-      place-items: center;
-      padding: 28px;
+    .btn:hover { background: var(--red-dark); box-shadow: var(--elev-1); }
+    .btn svg { width: 18px; height: 18px; fill: currentColor; }
+    .btn.tonal { background: var(--red-container); color: var(--red-dark); }
+    .btn.tonal:hover { background: #fbdcde; box-shadow: none; }
+    .btn.outline { background: transparent; color: var(--red); border: 1px solid var(--border); }
+    .btn.outline:hover { background: var(--red-container); box-shadow: none; }
+    .btn.text { background: transparent; color: var(--red); padding: 0 14px; }
+    .btn.text:hover { background: var(--red-container); box-shadow: none; }
+    .btn.neutral { background: transparent; color: var(--text-2); border: 1px solid var(--border); }
+    .btn.neutral:hover { background: var(--hover); box-shadow: none; color: var(--text); }
+    .btn.danger { background: transparent; color: var(--bad); }
+    .btn.danger:hover { background: rgba(197,34,31,.08); box-shadow: none; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+
+    /* ---------- Fields ---------- */
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .field > span { font-size: 0.78rem; color: var(--text-2); font-weight: 500; }
+    input, textarea, select {
+      width: 100%; border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+      padding: 10px 12px; outline: none; transition: border-color .15s ease, box-shadow .15s ease;
     }
-    .login-card {
-      width: min(720px, 100%);
-      border-radius: 12px;
-      overflow: hidden;
-      background: var(--paper);
-      box-shadow: var(--shadow);
-      border: 1px solid var(--line);
+    textarea { min-height: 80px; resize: vertical; line-height: 1.45; }
+    input:focus, textarea:focus, select:focus { border-color: var(--red); box-shadow: 0 0 0 1px var(--red); }
+    .search {
+      position: relative;
     }
+    .search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-3); pointer-events: none; }
+    .search input { height: 48px; padding-left: 44px; border-radius: 999px; background: var(--surface-2); border-color: transparent; }
+    .search input:focus { background: var(--surface); border-color: var(--red); }
+
+    /* ---------- Layout ---------- */
+    main { flex: 1 1 auto; min-width: 0; }
+    .view { padding: 20px; max-width: 1280px; margin: 0 auto; width: 100%; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    }
+    .card-pad { padding: 18px; }
+    .muted { color: var(--text-2); }
+    .status { min-height: 20px; font-size: 0.82rem; color: var(--text-2); }
+    .status.good { color: var(--good); }
+    .status.bad { color: var(--bad); }
+    .status.warn { color: var(--warn); }
+    .pill {
+      display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px;
+      background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2);
+      font-size: 0.74rem; font-weight: 500; white-space: nowrap;
+    }
+    .pill.red { background: var(--red-container); border-color: transparent; color: var(--red-dark); }
+    .pill.solid { background: var(--red); border-color: var(--red); color: #fff; }
+    .empty {
+      padding: 28px 18px; color: var(--text-2); text-align: center;
+      border: 1px dashed var(--border); border-radius: 12px; background: var(--surface-2);
+    }
+    .section-label { font-size: 0.72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
+
+    /* ---------- Login ---------- */
+    .login { display: grid; place-items: center; padding: 32px 20px; }
+    .login-card { width: min(560px, 100%); border-radius: 16px; overflow: hidden; background: var(--surface); box-shadow: var(--elev-2); }
     .login-hero {
-      padding: 34px 30px;
-      color: white;
-      background:
-        linear-gradient(135deg, rgba(215,25,32,.96), rgba(120,0,0,.84)),
-        var(--red);
-      display: grid;
-      gap: 16px;
+      padding: 40px 32px; color: #fff;
+      background: linear-gradient(135deg, var(--red), #8c0d12);
+      display: grid; gap: 18px;
     }
     .login-lockup { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .login-wordmark { height: clamp(34px, 7vw, 56px); width: auto; color: #fff; display: block; }
-    .login-tag {
-      font-size: 0.74rem;
-      font-weight: 900;
-      letter-spacing: .26em;
-      text-transform: uppercase;
-      color: var(--red);
-      background: #fff;
-      padding: 5px 11px 4px;
-      border-radius: 6px;
-      line-height: 1;
-    }
-    .login-hero h2 {
-      margin: 0;
-      font-size: clamp(1.8rem, 5.5vw, 3.2rem);
-      line-height: .95;
-      text-transform: uppercase;
-      letter-spacing: -.01em;
-    }
-    .login-body { padding: 24px 30px 30px; display: grid; gap: 14px; }
-    .login-body p { margin: 0; color: var(--muted); }
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(300px, 0.34fr) minmax(0, 1fr);
-      gap: 18px;
-      padding: 18px;
-      min-height: calc(100vh - 76px);
-    }
-    .panel {
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: rgba(255, 250, 240, .96);
-      box-shadow: var(--shadow);
-      min-width: 0;
-    }
-    .panel-head {
-      padding: 16px;
-      border-bottom: 1px solid var(--line);
-      display: grid;
-      gap: 10px;
-    }
-    .panel-body { padding: 16px; min-width: 0; }
-    .search-shell {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-    }
-    input, textarea, select {
-      width: 100%;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: #fff;
-      color: var(--ink);
-      padding: 10px 11px;
-      outline: none;
-    }
-    textarea { min-height: 86px; resize: vertical; line-height: 1.4; }
-    input:focus, textarea:focus, select:focus { border-color: var(--red); box-shadow: 0 0 0 3px rgba(215,25,32,.14); }
-    label { display: grid; gap: 5px; color: var(--muted); font-size: 0.8rem; font-weight: 850; text-transform: uppercase; letter-spacing: .04em; }
-    .side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .kid-list { display: grid; gap: 8px; max-height: calc(100vh - 250px); overflow: auto; padding-right: 4px; }
+    .login-wordmark { height: clamp(34px, 7vw, 52px); width: auto; color: #fff; display: block; }
+    .login-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--red); background: #fff; padding: 5px 11px 4px; border-radius: 6px; line-height: 1; }
+    .login-hero h2 { font-size: clamp(1.4rem, 4vw, 2rem); line-height: 1.1; font-weight: 400; opacity: .96; }
+    .login-body { padding: 28px 32px 32px; display: grid; gap: 18px; }
+    .login-body p { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.5; }
+
+    /* ---------- Files view ---------- */
+    .workspace { display: grid; grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: 20px; align-items: start; }
+    .kid-list { display: grid; gap: 8px; margin-top: 14px; max-height: calc(100vh - 240px); overflow: auto; padding-right: 2px; }
     .kid-card {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fff;
-      padding: 12px;
-      text-align: left;
-      display: grid;
-      gap: 6px;
-      transition: border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+      border: 1px solid var(--border); border-radius: 12px; background: var(--surface);
+      padding: 12px 14px; text-align: left; display: grid; gap: 6px; width: 100%;
+      transition: background .12s ease, border-color .12s ease;
     }
-    .kid-card:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,.08); }
-    .kid-card.active { border-color: var(--red); box-shadow: 0 0 0 3px rgba(215,25,32,.12); }
-    .kid-card strong { font-size: 1rem; }
-    .kid-meta { display: flex; flex-wrap: wrap; gap: 6px; color: var(--muted); font-size: .8rem; }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      width: fit-content;
-      max-width: 100%;
-      padding: 4px 8px;
-      border-radius: 999px;
-      background: #f0e3d8;
-      color: var(--charcoal);
-      font-size: 0.74rem;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-    }
-    .pill.red { background: var(--red); color: white; }
-    .detail-shell { display: grid; gap: 18px; min-width: 0; }
-    .file-hero {
-      padding: 18px;
-      color: white;
-      background:
-        linear-gradient(135deg, rgba(7,7,7,.95), rgba(42,38,34,.9)),
-        var(--black);
-      border-radius: 12px 12px 0 0;
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-      align-items: flex-start;
-      border-bottom: 5px solid var(--red);
-    }
-    .file-hero h2 { margin: 0; font-size: clamp(1.8rem, 4vw, 3.5rem); line-height: .94; text-transform: uppercase; }
-    .file-hero p { margin: 8px 0 0; color: #d8d1c7; }
-    .file-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
-    .file-form { display: grid; gap: 14px; }
-    .form-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-    .project-form {
-      display: grid;
-      grid-template-columns: minmax(190px, 1fr) 150px 150px auto;
-      gap: 10px;
-      align-items: end;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fff;
-    }
-    .projects { display: grid; gap: 10px; }
+    .kid-card:hover { background: var(--surface-2); }
+    .kid-card.active { border-color: var(--red); background: var(--red-container); }
+    .kid-card strong { font-size: 0.95rem; font-weight: 500; color: var(--text); }
+    .kid-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--text-2); font-size: 0.78rem; }
+    .detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .detail-head h2 { font-size: 1.5rem; }
+    .detail-head .sub { color: var(--text-2); margin-top: 4px; font-size: 0.9rem; }
+    .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .form-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+    .block-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 22px 0 12px; }
+    .block-head h3 { font-size: 1.05rem; }
+    .project-form { display: grid; grid-template-columns: minmax(180px, 1fr) 150px 150px auto; gap: 12px; align-items: end; }
+    .projects { display: grid; gap: 10px; margin-top: 14px; }
     .project-card {
-      border: 1px solid var(--line);
-      border-left: 6px solid var(--red);
-      border-radius: 10px;
-      background: #fff;
-      padding: 12px;
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 12px;
-      align-items: end;
+      border: 1px solid var(--border); border-left: 4px solid var(--red); border-radius: 10px;
+      background: var(--surface); padding: 12px 14px;
+      display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end;
     }
-    .project-card h4 { margin: 0 0 5px; font-size: 1rem; }
-    .project-card p { margin: 0; color: var(--muted); font-size: .86rem; }
-    .project-edit-grid {
-      display: grid;
-      grid-template-columns: minmax(170px, 1fr) 150px 150px;
-      gap: 10px;
-      min-width: 0;
+    .project-edit-grid { display: grid; grid-template-columns: minmax(160px, 1fr) 150px 150px; gap: 12px; min-width: 0; }
+    .project-actions { display: flex; gap: 6px; align-items: end; flex-wrap: wrap; justify-content: flex-end; }
+
+    /* ---------- Calendar view ---------- */
+    .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .cal-head h2 { font-size: 1.4rem; }
+    .cal-head .sub { color: var(--text-2); font-size: 0.86rem; margin-top: 2px; }
+    .cal-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 360px); gap: 20px; align-items: start; }
+    .cal-scroll { overflow-x: auto; }
+    .cal-grid { display: grid; grid-template-columns: 48px repeat(7, minmax(40px, 1fr)); gap: 6px; min-width: 520px; }
+    .cal-corner { }
+    .cal-dow { text-align: center; font-size: 0.72rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); padding-bottom: 4px; }
+    .cal-week-label { display: grid; align-content: center; justify-items: center; gap: 1px; color: var(--text-2); }
+    .cal-week-label span { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+    .cal-week-label small { font-size: 0.6rem; color: var(--text-3); }
+    .cal-day {
+      position: relative; border: 1px solid var(--border); border-radius: 10px; background: var(--surface);
+      min-height: 56px; padding: 6px; text-align: left; display: flex; flex-direction: column; gap: 4px;
+      background-image: linear-gradient(rgba(215,25,32, var(--heat, 0)), rgba(215,25,32, var(--heat, 0)));
+      transition: box-shadow .12s ease, border-color .12s ease;
     }
-    .project-actions {
-      display: flex;
-      align-items: end;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
+    .cal-day:hover { box-shadow: var(--elev-1); }
+    .cal-day.empty { color: var(--text-3); }
+    .cal-num { font-size: 0.82rem; font-weight: 500; }
+    .cal-num em { font-style: normal; color: var(--text-3); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
+    .cal-count {
+      align-self: flex-start; margin-top: auto; min-width: 20px; height: 20px; padding: 0 6px;
+      border-radius: 999px; background: var(--red); color: #fff; font-size: 0.72rem; font-weight: 700;
+      display: inline-flex; align-items: center; justify-content: center;
     }
-    .empty {
-      padding: 22px;
-      color: var(--muted);
-      text-align: center;
-      border: 1px dashed var(--line);
-      border-radius: 10px;
-      background: rgba(255,255,255,.62);
-    }
-    .status { min-height: 22px; color: var(--muted); font-size: 0.86rem; }
-    .status.good { color: var(--green); }
-    .status.bad { color: var(--bad); }
-    .status.warn { color: #8b4a12; }
-    .section-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-    .section-title h3 { margin: 0; font-size: 1.08rem; }
-    .muted { color: var(--muted); }
-    @media (max-width: 980px) {
-      .workspace { grid-template-columns: 1fr; }
-      .kid-list { max-height: none; }
+    .cal-day.today { border-color: var(--red); }
+    .cal-day.today .cal-num { color: var(--red); font-weight: 700; }
+    .cal-day.selected { box-shadow: 0 0 0 2px var(--red); border-color: var(--red); }
+
+    .day-panel { position: sticky; top: 96px; }
+    .day-panel h3 { font-size: 1.1rem; }
+    .day-panel .day-week { color: var(--text-2); font-size: 0.82rem; margin-top: 2px; }
+    .day-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+    .day-list { display: grid; gap: 10px; max-height: calc(100vh - 320px); overflow: auto; }
+    .day-kid { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .day-kid-head { width: 100%; text-align: left; background: var(--surface-2); border: 0; padding: 10px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .day-kid-head:hover { background: var(--hover); }
+    .day-kid-head strong { font-weight: 500; }
+    .day-proj { padding: 9px 12px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .day-proj-name { font-weight: 500; font-size: 0.9rem; }
+    .day-proj-range { color: var(--text-2); font-size: 0.78rem; }
+    .badge { font-size: 0.66rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; padding: 2px 7px; border-radius: 999px; }
+    .badge.start { background: #e6f4ea; color: var(--good); }
+    .badge.end { background: #fce8e6; color: var(--bad); }
+    .badge.ongoing { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+
+    /* ---------- Stats view ---------- */
+    .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
+    .stat-card { padding: 18px; }
+    .stat-value { font-size: 2rem; font-weight: 500; line-height: 1; color: var(--text); }
+    .stat-label { color: var(--text-2); font-size: 0.82rem; margin-top: 8px; }
+    .stats-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; margin-top: 20px; align-items: start; }
+    .week-row { display: grid; grid-template-columns: 92px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); }
+    .week-row:last-child { border-bottom: 0; }
+    .week-name { font-weight: 500; font-size: 0.84rem; }
+    .week-name small { display: block; color: var(--text-3); font-weight: 400; font-size: 0.7rem; }
+    .week-bar { height: 22px; border-radius: 6px; background: var(--surface-2); overflow: hidden; }
+    .week-bar > i { display: block; height: 100%; background: var(--red); border-radius: 6px; min-width: 2px; }
+    .week-meta { font-size: 0.78rem; color: var(--text-2); white-space: nowrap; }
+    .kid-stats-list { display: grid; gap: 2px; max-height: 460px; overflow: auto; }
+    .kid-stat-row { width: 100%; text-align: left; border: 0; background: transparent; border-radius: 8px; padding: 10px 12px; display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; }
+    .kid-stat-row:hover { background: var(--hover); }
+    .kid-stat-row .ks-name { font-weight: 500; }
+    .kid-stat-row .ks-sub { color: var(--text-2); font-size: 0.76rem; margin-top: 2px; }
+    .kid-stat-row .ks-metrics { display: flex; gap: 6px; align-items: center; }
+
+    @media (max-width: 960px) {
+      .workspace, .cal-layout, .stats-grid { grid-template-columns: 1fr; }
+      .kid-list, .day-list { max-height: none; }
+      .day-panel { position: static; }
       .form-row, .project-form, .project-card, .project-edit-grid { grid-template-columns: 1fr; }
       .project-actions { justify-content: flex-start; }
     }
-    @media (max-width: 640px) {
-      .topbar { align-items: flex-start; }
-      .top-actions { width: 100%; justify-content: flex-start; }
-      .workspace { padding: 10px; gap: 10px; }
-      .search-shell, .side-grid { grid-template-columns: 1fr; }
-      .file-hero { display: grid; }
-      .file-actions { justify-content: flex-start; }
+    @media (max-width: 600px) {
+      .appbar-row { padding: 0 10px; gap: 8px; }
+      .user-chip span { display: none; }
+      .view { padding: 14px; }
+      .tabs { padding: 0 6px; }
+      .tab { padding: 0 12px; }
     }
   </style>
 </head>
@@ -343,78 +293,102 @@
       <path d="M537.53,4c4.72,0,9.44,0,14.16,0a4.44,4.44,0,0,1,1.41.17c2.23.8,2.6,2.18.89,3.84-3.51,3.43-7.19,6.71-10.66,10.19C537.62,23.89,532,29.64,526.39,35.5c-7.69,8.08-15.28,16.26-22.88,24.42-5.92,6.35-12,12.58-17.65,19.13a108.17,108.17,0,0,0-19.14,32.82,117.25,117.25,0,0,0-6.39,23.1c-.45,2.83-.79,5.68-1,8.54a35.58,35.58,0,0,0,.2,3.7c0,1.48-.55,2.07-2.05,1.94-1.34-.11-2.66-.5-4-.65-2.58-.28-5.16-.58-7.74-.7-4.95-.24-9.91-.25-14.85-.57-4.1-.26-8.18-.83-12.26-1.27a17,17,0,0,1-3-.41,10.51,10.51,0,0,1-3-1.36c-1-.67-1-1.84-.26-3.13,1.21-2.06,2.49-4.08,3.75-6.12C424,122.05,432,109.19,439.85,96.25a48.65,48.65,0,0,0,6.38-19.77c1.57-13.33-.2-26.35-3.75-39.17-1.41-5.09-3.1-10.13-5-15.08a33.28,33.28,0,0,0-6.66-10.45c-.84-.95-1.94-1.66-2.85-2.55a22.1,22.1,0,0,1-2.59-2.8c-1.93-2.65.07-4.6,2.08-4.89,9.25-1.3,18.52-1.95,27.73.23a39.53,39.53,0,0,1,6.89,2.3c6.11,2.72,9.58,7.5,10.84,14.07,2.14,11.19,4.44,22.34,6.7,33.51a8.94,8.94,0,0,0,.77,2.25,2.31,2.31,0,0,0,3.53,1,13.16,13.16,0,0,0,2.13-1.74c6-5.78,12-11.47,17.88-17.4a127.24,127.24,0,0,0,15.94-20,32.43,32.43,0,0,0,2-3.95,3.59,3.59,0,0,0-.28-3.54A6.33,6.33,0,0,1,521,6.92C520.41,5,521.17,4,523.13,4,527.93,4,532.73,4,537.53,4Z"/>
     </symbol>
   </svg>
+
   <div class="app">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-lockup">
+    <header class="appbar">
+      <div class="appbar-row">
+        <div class="brand">
           <svg class="gl-wordmark" viewBox="0 0 1068.54 162.18" role="img" aria-label="Greylock"><use href="#gl-wordmark"/></svg>
           <span class="brand-tag">Radio</span>
         </div>
-        <span id="workbookLabel" class="brand-sub">Camp Greylock kid files</span>
-      </div>
-      <div class="top-actions">
-        <div id="userChip" class="user-chip hidden">
-          <img id="userPhoto" alt="">
-          <span id="userName"></span>
+        <div class="spacer"></div>
+        <div class="appbar-actions">
+          <div id="userChip" class="user-chip hidden">
+            <img id="userPhoto" alt="">
+            <span id="userName"></span>
+          </div>
+          <button id="openSheetBtn" class="icon-btn hidden" type="button" title="Open Google Sheet" aria-label="Open Google Sheet">
+            <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+          </button>
+          <button id="refreshBtn" class="icon-btn hidden" type="button" title="Refresh data" aria-label="Refresh data">
+            <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>
+          </button>
+          <button id="logoutBtn" class="icon-btn hidden" type="button" title="Sign out" aria-label="Sign out">
+            <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5z"/></svg>
+          </button>
         </div>
-        <button id="openSheetBtn" class="btn hidden" type="button">Open Sheet</button>
-        <button id="refreshBtn" class="btn hidden" type="button">Refresh</button>
-        <button id="logoutBtn" class="btn hidden" type="button">Sign out</button>
       </div>
+      <nav id="appTabs" class="tabs hidden">
+        <button id="tabFiles" class="tab active" type="button" data-view="files">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+          Kid files
+        </button>
+        <button id="tabCalendar" class="tab" type="button" data-view="calendar">
+          <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V9h14v10zM5 7V5h14v2H5z"/></svg>
+          Calendar
+        </button>
+        <button id="tabStats" class="tab" type="button" data-view="stats">
+          <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+          Statistics
+        </button>
+      </nav>
     </header>
 
-    <main id="loginView" class="login">
-      <section class="login-card">
-        <div class="login-hero">
-          <div class="login-lockup">
-            <svg class="login-wordmark" viewBox="0 0 1068.54 162.18" role="img" aria-label="Greylock"><use href="#gl-wordmark"/></svg>
-            <span class="login-tag">Radio</span>
+    <main>
+      <!-- LOGIN -->
+      <section id="loginView" class="view login">
+        <div class="login-card">
+          <div class="login-hero">
+            <div class="login-lockup">
+              <svg class="login-wordmark" viewBox="0 0 1068.54 162.18" role="img" aria-label="Greylock"><use href="#gl-wordmark"/></svg>
+              <span class="login-tag">Radio</span>
+            </div>
+            <h2>Kid files, projects &amp; the camp calendar in one place.</h2>
           </div>
-          <h2>Kid file command center</h2>
-        </div>
-        <div class="login-body">
-          <p>Sign in with Google to use one centralized Google Sheet for every kid file and project record.</p>
-          <button id="loginBtn" class="btn primary" type="button">Sign in with Google</button>
-          <div id="loginStatus" class="status"></div>
+          <div class="login-body">
+            <p>Sign in with Google to use one centralized Google Sheet for every kid file, project record, and the nine-week camp schedule.</p>
+            <div><button id="loginBtn" class="btn" type="button">Sign in with Google</button></div>
+            <div id="loginStatus" class="status"></div>
+          </div>
         </div>
       </section>
-    </main>
 
-    <main id="appView" class="workspace hidden">
-      <aside class="panel">
-        <div class="panel-head">
-          <label for="kidSearchInput">Search all kids</label>
-          <div class="search-shell">
-            <input id="kidSearchInput" type="search" placeholder="Type a name">
-            <button id="newFromSearchBtn" class="btn primary" type="button">New file</button>
-          </div>
-          <div id="kidCount" class="status"></div>
-        </div>
-        <div class="panel-body">
-          <div id="kidList" class="kid-list"></div>
-        </div>
-      </aside>
+      <!-- FILES -->
+      <section id="filesView" class="view hidden">
+        <div class="workspace">
+          <aside class="card card-pad">
+            <div class="search">
+              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+              <input id="kidSearchInput" type="search" placeholder="Search kids" aria-label="Search kids">
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:12px;">
+              <span id="kidCount" class="status"></span>
+              <button id="newFromSearchBtn" class="btn tonal" type="button" style="height:36px; padding:0 16px;">
+                <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                New file
+              </button>
+            </div>
+            <div id="kidList" class="kid-list"></div>
+          </aside>
 
-      <section class="panel detail-shell">
-        <div id="fileHero" class="file-hero">
-          <div>
-            <span class="pill red">Kid file</span>
-            <h2 id="fileTitle">Create or select a file</h2>
-            <p id="fileSubtitle">Search first. If the kid is not there, create a new file.</p>
-          </div>
-          <div class="file-actions">
-            <button id="saveKidBtn" class="btn primary" type="button">Save file</button>
-            <button id="deleteKidBtn" class="btn" type="button">Delete file</button>
-          </div>
-        </div>
+          <section class="card card-pad">
+            <div class="detail-head">
+              <div>
+                <span class="pill red">Kid file</span>
+                <h2 id="fileTitle" style="margin-top:8px;">Create or select a file</h2>
+                <div id="fileSubtitle" class="sub">Search first. If the kid is not there, create a new file.</div>
+              </div>
+              <div class="detail-actions">
+                <button id="saveKidBtn" class="btn" type="button">Save file</button>
+                <button id="deleteKidBtn" class="btn danger" type="button">Delete file</button>
+              </div>
+            </div>
 
-        <div class="panel-body">
-          <div class="file-form">
             <div class="form-row">
-              <label>Name
+              <label class="field"><span>Name</span>
                 <input id="kidNameInput" autocomplete="off" placeholder="Kid name">
               </label>
-              <label>Division
+              <label class="field"><span>Division</span>
                 <select id="divisionInput">
                   <option value="">Select division</option>
                   <option value="Super Scout">Super Scout</option>
@@ -429,7 +403,7 @@
                   <option value="Senior Senior">Senior Senior</option>
                 </select>
               </label>
-              <label>Side
+              <label class="field"><span>Side</span>
                 <select id="sideSelect">
                   <option value="">Select side</option>
                   <option value="Junior side">Junior side</option>
@@ -437,33 +411,74 @@
                 </select>
               </label>
             </div>
-            <div id="fileStatus" class="status"></div>
+            <div id="fileStatus" class="status" style="margin-top:12px;"></div>
+
+            <div class="block-head">
+              <div>
+                <h3>Projects</h3>
+                <div class="muted" style="font-size:0.82rem;">Add projects with a start date and an optional end date.</div>
+              </div>
+              <span id="projectCount" class="pill">0 projects</span>
+            </div>
+
+            <div class="project-form">
+              <label class="field"><span>Project</span>
+                <input id="projectNameInput" placeholder="Project name">
+              </label>
+              <label class="field"><span>Start</span>
+                <input id="projectStartInput" type="date">
+              </label>
+              <label class="field"><span>End (optional)</span>
+                <input id="projectEndInput" type="date">
+              </label>
+              <button id="addProjectBtn" class="btn" type="button">Add</button>
+            </div>
+
+            <div id="projectsList" class="projects"></div>
+          </section>
+        </div>
+      </section>
+
+      <!-- CALENDAR -->
+      <section id="calendarView" class="view hidden">
+        <div class="cal-head">
+          <div>
+            <h2>Camp calendar</h2>
+            <div id="calWindowLabel" class="sub"></div>
+          </div>
+          <button id="calTodayBtn" class="btn outline" type="button" style="height:36px;">Jump to today</button>
+        </div>
+        <div class="cal-layout">
+          <div class="card card-pad cal-scroll">
+            <div id="calGrid" class="cal-grid"></div>
+          </div>
+          <aside class="card card-pad day-panel">
+            <h3 id="dayTitle">Pick a day</h3>
+            <div id="dayWeek" class="day-week"></div>
+            <div id="dayStats" class="day-stats"></div>
+            <div id="dayList" class="day-list"></div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- STATS -->
+      <section id="statsView" class="view hidden">
+        <div class="cal-head">
+          <div>
+            <h2>Statistics</h2>
+            <div id="statsWindowLabel" class="sub"></div>
           </div>
         </div>
-
-        <div class="panel-body">
-          <div class="section-title">
-            <div>
-              <h3>Projects</h3>
-              <div class="muted">Add projects one by one with start and end dates.</div>
-            </div>
-            <span id="projectCount" class="pill">0 projects</span>
+        <div id="statsSummary" class="stats-summary"></div>
+        <div class="stats-grid">
+          <div class="card card-pad">
+            <div class="section-label">Activity by week</div>
+            <div id="statsWeeks"></div>
           </div>
-
-          <div class="project-form">
-            <label>Project
-              <input id="projectNameInput" placeholder="Project name">
-            </label>
-            <label>Start
-              <input id="projectStartInput" type="date">
-            </label>
-            <label>End optional
-              <input id="projectEndInput" type="date">
-            </label>
-            <button id="addProjectBtn" class="btn primary" type="button">Add project</button>
+          <div class="card card-pad">
+            <div class="section-label">By kid (active days in window)</div>
+            <div id="statsKids" class="kid-stats-list"></div>
           </div>
-
-          <div id="projectsList" class="projects" style="margin-top:12px"></div>
         </div>
       </section>
     </main>
@@ -476,15 +491,19 @@
       "https://www.googleapis.com/auth/spreadsheets"
     ].join(" ");
     const WORKBOOK_NAME = "Greylock Radio Kid Files";
-    const SHEETS = Object.freeze({
-      kids: "Kids",
-      projects: "Projects"
-    });
+    const SHEETS = Object.freeze({ kids: "Kids", projects: "Projects" });
     const HEADERS = Object.freeze({
       kids: ["Kid ID", "Name", "Division", "Side", "Created At", "Updated At"],
       projects: ["Project ID", "Kid ID", "Kid Name", "Project", "Start Date", "End Date", "Notes", "Updated At"]
     });
     const TOKEN_FRESH_MS = 60000;
+    const CAMP_WEEKS = 9;
+    const WEEK_START = 0; // 0 = Sunday
+    const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const MONTHS_FULL = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const DOW_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
     const els = {};
     const state = {
       tokenClient: null,
@@ -496,20 +515,27 @@
       kids: [],
       projects: [],
       selectedKidId: "",
-      draftKidId: ""
+      view: "files",
+      selectedDate: ""
     };
 
     function $(id) { return document.getElementById(id); }
     function cacheEls() {
       [
-        "loginView", "appView", "loginBtn", "loginStatus", "userChip", "userPhoto", "userName",
-        "openSheetBtn", "refreshBtn", "logoutBtn", "workbookLabel", "kidSearchInput", "newFromSearchBtn",
-        "kidCount", "kidList", "fileTitle", "fileSubtitle", "saveKidBtn", "deleteKidBtn",
+        "loginView", "filesView", "calendarView", "statsView",
+        "loginBtn", "loginStatus", "userChip", "userPhoto", "userName",
+        "openSheetBtn", "refreshBtn", "logoutBtn",
+        "appTabs", "tabFiles", "tabCalendar", "tabStats",
+        "kidSearchInput", "newFromSearchBtn", "kidCount", "kidList",
+        "fileTitle", "fileSubtitle", "saveKidBtn", "deleteKidBtn",
         "kidNameInput", "divisionInput", "sideSelect", "fileStatus", "projectCount",
-        "projectNameInput", "projectStartInput", "projectEndInput", "addProjectBtn", "projectsList"
+        "projectNameInput", "projectStartInput", "projectEndInput", "addProjectBtn", "projectsList",
+        "calWindowLabel", "calTodayBtn", "calGrid", "dayTitle", "dayWeek", "dayStats", "dayList",
+        "statsWindowLabel", "statsSummary", "statsWeeks", "statsKids"
       ].forEach(function (id) { els[id] = $(id); });
     }
     function setStatus(el, text, kind) {
+      if (!el) return;
       el.textContent = text || "";
       el.className = "status" + (kind ? " " + kind : "");
     }
@@ -524,9 +550,7 @@
         return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch];
       });
     }
-    function quoteSheetName(name) {
-      return "'" + String(name).replace(/'/g, "''") + "'";
-    }
+    function quoteSheetName(name) { return "'" + String(name).replace(/'/g, "''") + "'"; }
     function valuesUrl(range) {
       return "https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) +
         "/values/" + encodeURIComponent(range);
@@ -542,39 +566,68 @@
       if (/404/i.test(raw)) return "The Google Sheet could not be found.";
       return raw || fallback || "Something went wrong.";
     }
+
+    /* ---------- Date helpers ---------- */
+    function pad2(n) { return n < 10 ? "0" + n : "" + n; }
+    function toISO(d) { return d.getFullYear() + "-" + pad2(d.getMonth() + 1) + "-" + pad2(d.getDate()); }
+    function parseISO(s) {
+      if (!s) return null;
+      const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s));
+      return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null;
+    }
+    function addDays(d, n) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() + n); return x; }
+    function startOfWeek(d) {
+      const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const diff = (x.getDay() - WEEK_START + 7) % 7;
+      return addDays(x, -diff);
+    }
+    function windowStart() { return startOfWeek(new Date()); }
+    function windowEndISO() { return toISO(addDays(windowStart(), CAMP_WEEKS * 7 - 1)); }
+    function monthDay(d) { return MONTHS[d.getMonth()] + " " + d.getDate(); }
+    function monthDayFull(d) { return MONTHS_FULL[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear(); }
+    function fmtRange(a, b) {
+      if (a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth()) return MONTHS[a.getMonth()] + " " + a.getDate() + "–" + b.getDate();
+      return MONTHS[a.getMonth()] + " " + a.getDate() + " – " + MONTHS[b.getMonth()] + " " + b.getDate();
+    }
+    function weekIndexOfISO(iso) {
+      const d = parseISO(iso); if (!d) return 0;
+      const diff = Math.round((d - windowStart()) / 86400000);
+      return Math.floor(diff / 7);
+    }
+    function defaultDate() {
+      const t = toISO(new Date());
+      const s = toISO(windowStart());
+      return (t >= s && t <= windowEndISO()) ? t : s;
+    }
+    function projectActiveOn(p, iso) {
+      const s = (p.startDate || "").slice(0, 10);
+      if (!s || iso < s) return false;
+      const e = (p.endDate || "").slice(0, 10);
+      return e ? iso <= e : true; // no end date => ongoing through the window
+    }
+
+    /* ---------- Google auth + Sheets ---------- */
     function initGoogle() {
-      if (!window.google || !google.accounts || !google.accounts.oauth2) {
-        setTimeout(initGoogle, 200);
-        return;
-      }
+      if (!window.google || !google.accounts || !google.accounts.oauth2) { setTimeout(initGoogle, 200); return; }
       state.tokenClient = google.accounts.oauth2.initTokenClient({
-        client_id: GOOGLE_CLIENT_ID,
-        scope: GOOGLE_SCOPE,
-        include_granted_scopes: true,
-        callback: function () {}
+        client_id: GOOGLE_CLIENT_ID, scope: GOOGLE_SCOPE, include_granted_scopes: true, callback: function () {}
       });
       setStatus(els.loginStatus, "");
     }
     function ensureAccessToken(interactive) {
-      if (state.accessToken && Date.now() < state.accessTokenExpiresAt - TOKEN_FRESH_MS) {
-        return Promise.resolve(state.accessToken);
-      }
+      if (state.accessToken && Date.now() < state.accessTokenExpiresAt - TOKEN_FRESH_MS) return Promise.resolve(state.accessToken);
       if (!state.tokenClient) return Promise.reject(new Error("Google sign-in is still loading."));
       return new Promise(function (resolve, reject) {
         state.tokenClient.callback = function (resp) {
           if (!resp || resp.error || !resp.access_token) {
-            reject(new Error((resp && (resp.error_description || resp.error)) || "Google sign-in failed."));
-            return;
+            reject(new Error((resp && (resp.error_description || resp.error)) || "Google sign-in failed.")); return;
           }
           state.accessToken = resp.access_token;
           state.accessTokenExpiresAt = Date.now() + ((Number(resp.expires_in) || 3600) * 1000);
           resolve(state.accessToken);
         };
-        try {
-          state.tokenClient.requestAccessToken({ prompt: interactive ? "consent" : "" });
-        } catch (err) {
-          reject(err);
-        }
+        try { state.tokenClient.requestAccessToken({ prompt: interactive ? "consent" : "" }); }
+        catch (err) { reject(err); }
       });
     }
     function fetchJson(url, options) {
@@ -584,9 +637,7 @@
         return fetch(url, Object.assign({}, opts, { headers: headers })).then(function (res) {
           return res.text().then(function (text) {
             let data = null;
-            if (text) {
-              try { data = JSON.parse(text); } catch (err) { data = text; }
-            }
+            if (text) { try { data = JSON.parse(text); } catch (err) { data = text; } }
             if (!res.ok) {
               const detail = data && data.error && (data.error.message || data.error.status);
               throw new Error("Google API " + res.status + (detail ? ": " + detail : ""));
@@ -614,37 +665,23 @@
       ].join(" and ");
       const url = "https://www.googleapis.com/drive/v3/files?q=" + encodeURIComponent(q) +
         "&pageSize=10&fields=files(id,name,webViewLink,modifiedTime)&orderBy=modifiedTime desc";
-      return fetchJson(url).then(function (data) {
-        return data.files && data.files.length ? data.files[0] : null;
-      });
+      return fetchJson(url).then(function (data) { return data.files && data.files.length ? data.files[0] : null; });
     }
     function createWorkbook() {
       const body = {
         properties: { title: WORKBOOK_NAME },
-        sheets: [
-          { properties: { title: SHEETS.kids } },
-          { properties: { title: SHEETS.projects } }
-        ]
+        sheets: [{ properties: { title: SHEETS.kids } }, { properties: { title: SHEETS.projects } }]
       };
       return fetchJson("https://sheets.googleapis.com/v4/spreadsheets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body)
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
       }).then(function (data) {
-        return {
-          id: data.spreadsheetId,
-          name: WORKBOOK_NAME,
-          webViewLink: data.spreadsheetUrl
-        };
+        return { id: data.spreadsheetId, name: WORKBOOK_NAME, webViewLink: data.spreadsheetUrl };
       });
     }
     function ensureWorkbook() {
-      return findWorkbook().then(function (file) {
-        return file || createWorkbook();
-      }).then(function (file) {
+      return findWorkbook().then(function (file) { return file || createWorkbook(); }).then(function (file) {
         state.spreadsheetId = file.id;
         state.spreadsheetUrl = file.webViewLink || ("https://docs.google.com/spreadsheets/d/" + file.id + "/edit");
-        els.workbookLabel.textContent = WORKBOOK_NAME;
         els.openSheetBtn.classList.remove("hidden");
         return ensureSheetsAndHeaders();
       });
@@ -659,30 +696,21 @@
         });
         if (!requests.length) return true;
         return fetchJson("https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) + ":batchUpdate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ requests: requests })
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ requests: requests })
         });
-      }).then(function () {
-        return readAllSheets();
-      }).then(function () {
+      }).then(function () { return readAllSheets(); }).then(function () {
         const updates = [];
         if (!state.kids._hasHeader) updates.push({ range: quoteSheetName(SHEETS.kids) + "!A1:F1", values: [HEADERS.kids] });
         if (!state.projects._hasHeader) updates.push({ range: quoteSheetName(SHEETS.projects) + "!A1:H1", values: [HEADERS.projects] });
         if (!updates.length) return true;
         return fetchJson("https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) + "/values:batchUpdate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ valueInputOption: "RAW", data: updates })
         }).then(function () { return readAllSheets(); });
       });
     }
-    function hasKnownHeader(row, headers) {
-      return headers.every(function (h, i) { return String(row[i] || "").trim() === h; });
-    }
-    function hasLegacyKidHeader(row) {
-      return String(row[0] || "").trim() === "Kid ID" && String(row[1] || "").trim() === "Name";
-    }
+    function hasKnownHeader(row, headers) { return headers.every(function (h, i) { return String(row[i] || "").trim() === h; }); }
+    function hasLegacyKidHeader(row) { return String(row[0] || "").trim() === "Kid ID" && String(row[1] || "").trim() === "Name"; }
     function normalizeRows(values, headers, legacyHeaderCheck) {
       const rows = Array.isArray(values) ? values : [];
       const first = rows[0] || [];
@@ -691,10 +719,7 @@
     }
     function readAllSheets() {
       if (!state.spreadsheetId) return Promise.resolve();
-      const ranges = [
-        quoteSheetName(SHEETS.kids) + "!A:F",
-        quoteSheetName(SHEETS.projects) + "!A:H"
-      ];
+      const ranges = [quoteSheetName(SHEETS.kids) + "!A:F", quoteSheetName(SHEETS.projects) + "!A:H"];
       return fetchJson("https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) +
         "/values:batchGet?ranges=" + ranges.map(encodeURIComponent).join("&ranges=")).then(function (data) {
         const vr = data.valueRanges || [];
@@ -707,69 +732,57 @@
       });
     }
     function rowToKid(r) {
-      return {
-        id: r[0] || makeId("kid", r[1]),
-        name: r[1] || "",
-        division: r[2] || "",
-        side: r[3] || "",
-        createdAt: r[4] || r[5] || "",
-        updatedAt: r[5] || ""
-      };
+      return { id: r[0] || makeId("kid", r[1]), name: r[1] || "", division: r[2] || "", side: r[3] || "", createdAt: r[4] || r[5] || "", updatedAt: r[5] || "" };
     }
     function rowToProject(r) {
-      return {
-        id: r[0] || makeId("project", r[3]),
-        kidId: r[1] || "",
-        kidName: r[2] || "",
-        name: r[3] || "",
-        startDate: r[4] || "",
-        endDate: r[5] || "",
-        notes: r[6] || "",
-        updatedAt: r[7] || ""
-      };
+      return { id: r[0] || makeId("project", r[3]), kidId: r[1] || "", kidName: r[2] || "", name: r[3] || "", startDate: r[4] || "", endDate: r[5] || "", notes: r[6] || "", updatedAt: r[7] || "" };
     }
-    function kidToRow(kid) {
-      return [kid.id, kid.name, kid.division, kid.side, kid.createdAt, kid.updatedAt];
-    }
-    function projectToRow(project) {
-      return [project.id, project.kidId, project.kidName, project.name, project.startDate, project.endDate, project.notes, project.updatedAt];
-    }
-    function sortKids(a, b) {
-      return String(a.name || "").localeCompare(String(b.name || ""));
-    }
+    function kidToRow(kid) { return [kid.id, kid.name, kid.division, kid.side, kid.createdAt, kid.updatedAt]; }
+    function projectToRow(p) { return [p.id, p.kidId, p.kidName, p.name, p.startDate, p.endDate, p.notes, p.updatedAt]; }
+    function sortKids(a, b) { return String(a.name || "").localeCompare(String(b.name || "")); }
     function rewriteSheet(sheetName, headers, rows, cols) {
       const range = quoteSheetName(sheetName) + "!A:" + cols;
       return fetchJson(valuesUrl(range) + ":clear", { method: "POST" }).then(function () {
         return fetchJson(valuesUrl(quoteSheetName(sheetName) + "!A1") + "?valueInputOption=RAW", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ values: [headers].concat(rows) })
+          method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ values: [headers].concat(rows) })
         });
       });
     }
-    function selectedKid() {
-      return state.kids.find(function (kid) { return kid.id === state.selectedKidId; }) || null;
-    }
+    function selectedKid() { return state.kids.find(function (kid) { return kid.id === state.selectedKidId; }) || null; }
     function projectsForKid(kidId) {
-      return state.projects.filter(function (project) { return project.kidId === kidId; })
+      return state.projects.filter(function (p) { return p.kidId === kidId; })
         .sort(function (a, b) { return String(b.startDate || "").localeCompare(String(a.startDate || "")); });
     }
+
+    /* ---------- View switching ---------- */
+    function setView(view) {
+      state.view = view;
+      els.filesView.classList.toggle("hidden", view !== "files");
+      els.calendarView.classList.toggle("hidden", view !== "calendar");
+      els.statsView.classList.toggle("hidden", view !== "stats");
+      els.tabFiles.classList.toggle("active", view === "files");
+      els.tabCalendar.classList.toggle("active", view === "calendar");
+      els.tabStats.classList.toggle("active", view === "stats");
+      if (view === "calendar") renderCalendar();
+      else if (view === "stats") renderStats();
+      else { renderKids(); renderSelectedKid(); renderProjects(); }
+    }
+    function renderAll() {
+      renderKids(); renderSelectedKid(); renderProjects();
+      if (state.view === "calendar") renderCalendar();
+      else if (state.view === "stats") renderStats();
+    }
+
+    /* ---------- Files view ---------- */
     function newDraft(name) {
       state.selectedKidId = "";
-      state.draftKidId = "";
       els.kidNameInput.value = name || "";
       els.divisionInput.value = "";
       els.sideSelect.value = "";
       els.fileTitle.textContent = "New kid file";
       els.fileSubtitle.textContent = "Fill the fields, save the file, then add projects.";
       setStatus(els.fileStatus, "This file is not saved yet.", "warn");
-      renderProjects();
-      renderKids();
-    }
-    function renderAll() {
-      renderKids();
-      renderSelectedKid();
-      renderProjects();
+      renderProjects(); renderKids();
     }
     function renderKids() {
       const query = String(els.kidSearchInput.value || "").trim().toLowerCase();
@@ -777,10 +790,11 @@
         const haystack = [kid.name, kid.division, kid.side].join(" ").toLowerCase();
         return !query || haystack.includes(query);
       });
-      els.kidCount.textContent = kids.length + " of " + state.kids.length + " kid files";
+      els.kidCount.textContent = kids.length + " of " + state.kids.length + " kids";
       if (!kids.length) {
         const name = escapeHtml(els.kidSearchInput.value.trim());
-        els.kidList.innerHTML = '<div class="empty">No kid file found' + (name ? ' for "' + name + '"' : "") + '.<br><br><button class="btn primary" type="button" data-create-from-empty>Create new file</button></div>';
+        els.kidList.innerHTML = '<div class="empty">No kid file found' + (name ? ' for "' + name + '"' : "") +
+          '.<br><br><button class="btn tonal" type="button" data-create-from-empty>Create new file</button></div>';
         return;
       }
       els.kidList.innerHTML = kids.map(function (kid) {
@@ -808,7 +822,7 @@
       els.divisionInput.value = kid.division || "";
       els.sideSelect.value = kid.side || "";
       els.fileTitle.textContent = kid.name || "Unnamed kid";
-      els.fileSubtitle.textContent = [kid.division, kid.side].filter(Boolean).join(" | ") || "No division or side saved yet.";
+      els.fileSubtitle.textContent = [kid.division, kid.side].filter(Boolean).join(" · ") || "No division or side saved yet.";
       setStatus(els.fileStatus, "File loaded.", "good");
     }
     function renderProjects() {
@@ -816,121 +830,72 @@
       const projects = kid ? projectsForKid(kid.id) : [];
       els.projectCount.textContent = projects.length + (projects.length === 1 ? " project" : " projects");
       els.addProjectBtn.disabled = !kid || !kid.id;
-      if (!kid) {
-        els.projectsList.innerHTML = '<div class="empty">Save or select a kid file before adding projects.</div>';
-        return;
-      }
-      if (!projects.length) {
-        els.projectsList.innerHTML = '<div class="empty">No projects yet for this kid.</div>';
-        return;
-      }
-      els.projectsList.innerHTML = projects.map(function (project) {
+      if (!kid) { els.projectsList.innerHTML = '<div class="empty">Save or select a kid file before adding projects.</div>'; return; }
+      if (!projects.length) { els.projectsList.innerHTML = '<div class="empty">No projects yet for this kid.</div>'; return; }
+      els.projectsList.innerHTML = projects.map(function (p) {
         return '<article class="project-card">' +
           '<div class="project-edit-grid">' +
-          '<label>Project<input data-project-field="name" data-project-id="' + escapeHtml(project.id) + '" value="' + escapeHtml(project.name || "") + '" placeholder="Project name"></label>' +
-          '<label>Start<input data-project-field="startDate" data-project-id="' + escapeHtml(project.id) + '" type="date" value="' + escapeHtml(project.startDate || "") + '"></label>' +
-          '<label>End optional<input data-project-field="endDate" data-project-id="' + escapeHtml(project.id) + '" type="date" value="' + escapeHtml(project.endDate || "") + '"></label>' +
+          '<label class="field"><span>Project</span><input data-project-field="name" data-project-id="' + escapeHtml(p.id) + '" value="' + escapeHtml(p.name || "") + '" placeholder="Project name"></label>' +
+          '<label class="field"><span>Start</span><input data-project-field="startDate" data-project-id="' + escapeHtml(p.id) + '" type="date" value="' + escapeHtml((p.startDate || "").slice(0, 10)) + '"></label>' +
+          '<label class="field"><span>End (optional)</span><input data-project-field="endDate" data-project-id="' + escapeHtml(p.id) + '" type="date" value="' + escapeHtml((p.endDate || "").slice(0, 10)) + '"></label>' +
           '</div>' +
           '<div class="project-actions">' +
-          '<button class="btn primary" type="button" data-save-project="' + escapeHtml(project.id) + '">Save</button>' +
-          '<button class="btn danger" type="button" data-delete-project="' + escapeHtml(project.id) + '">Remove</button>' +
-          '</div>' +
-          '</article>';
+          '<button class="btn text" type="button" data-save-project="' + escapeHtml(p.id) + '">Save</button>' +
+          '<button class="btn danger" type="button" data-delete-project="' + escapeHtml(p.id) + '">Remove</button>' +
+          '</div></article>';
       }).join("");
     }
     function saveKidFile() {
       const name = els.kidNameInput.value.trim();
-      if (!name) {
-        setStatus(els.fileStatus, "Name is required.", "warn");
-        return;
-      }
+      if (!name) { setStatus(els.fileStatus, "Name is required.", "warn"); return; }
       const now = new Date().toISOString();
       let kid = selectedKid();
       if (kid) {
-        kid.name = name;
-        kid.division = els.divisionInput.value.trim();
-        kid.side = els.sideSelect.value;
-        kid.updatedAt = now;
-        state.projects.forEach(function (project) {
-          if (project.kidId === kid.id) project.kidName = kid.name;
-        });
+        kid.name = name; kid.division = els.divisionInput.value.trim(); kid.side = els.sideSelect.value; kid.updatedAt = now;
+        state.projects.forEach(function (p) { if (p.kidId === kid.id) p.kidName = kid.name; });
       } else {
-        kid = {
-          id: makeId("kid", name),
-          name: name,
-          division: els.divisionInput.value.trim(),
-          side: els.sideSelect.value,
-          createdAt: now,
-          updatedAt: now
-        };
-        state.kids.push(kid);
-        state.kids.sort(sortKids);
-        state.selectedKidId = kid.id;
+        kid = { id: makeId("kid", name), name: name, division: els.divisionInput.value.trim(), side: els.sideSelect.value, createdAt: now, updatedAt: now };
+        state.kids.push(kid); state.kids.sort(sortKids); state.selectedKidId = kid.id;
       }
       setBusy(true);
       Promise.all([
         rewriteSheet(SHEETS.kids, HEADERS.kids, state.kids.map(kidToRow), "F"),
         rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H")
-      ]).then(function () {
-        setStatus(els.fileStatus, "Kid file saved.", "good");
-        renderAll();
-      }).catch(function (err) {
-        setStatus(els.fileStatus, messageFromError(err, "Could not save kid file."), "bad");
-      }).finally(function () { setBusy(false); });
+      ]).then(function () { setStatus(els.fileStatus, "Kid file saved.", "good"); renderAll(); })
+        .catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not save kid file."), "bad"); })
+        .finally(function () { setBusy(false); });
     }
     function deleteKidFile() {
       const kid = selectedKid();
-      if (!kid) {
-        newDraft("");
-        return;
-      }
+      if (!kid) { newDraft(""); return; }
       if (!confirm("Delete the file for " + kid.name + " and all of this kid's projects?")) return;
       state.kids = state.kids.filter(function (item) { return item.id !== kid.id; });
-      state.projects = state.projects.filter(function (project) { return project.kidId !== kid.id; });
+      state.projects = state.projects.filter(function (p) { return p.kidId !== kid.id; });
       state.selectedKidId = "";
       setBusy(true);
       Promise.all([
         rewriteSheet(SHEETS.kids, HEADERS.kids, state.kids.map(kidToRow), "F"),
         rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H")
-      ]).then(function () {
-        newDraft("");
-        setStatus(els.fileStatus, "Kid file deleted.", "good");
-      }).catch(function (err) {
-        setStatus(els.fileStatus, messageFromError(err, "Could not delete kid file."), "bad");
-      }).finally(function () { setBusy(false); });
+      ]).then(function () { newDraft(""); setStatus(els.fileStatus, "Kid file deleted.", "good"); })
+        .catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not delete kid file."), "bad"); })
+        .finally(function () { setBusy(false); });
     }
     function addProject() {
       const kid = selectedKid();
-      if (!kid) {
-        setStatus(els.fileStatus, "Save the kid file before adding projects.", "warn");
-        return;
-      }
+      if (!kid) { setStatus(els.fileStatus, "Save the kid file before adding projects.", "warn"); return; }
       const name = els.projectNameInput.value.trim();
-      if (!name) {
-        setStatus(els.fileStatus, "Project name is required.", "warn");
-        return;
-      }
+      if (!name) { setStatus(els.fileStatus, "Project name is required.", "warn"); return; }
       const project = {
-        id: makeId("project", name),
-        kidId: kid.id,
-        kidName: kid.name,
-        name: name,
-        startDate: els.projectStartInput.value,
-        endDate: els.projectEndInput.value,
-        notes: "",
-        updatedAt: new Date().toISOString()
+        id: makeId("project", name), kidId: kid.id, kidName: kid.name, name: name,
+        startDate: els.projectStartInput.value, endDate: els.projectEndInput.value, notes: "", updatedAt: new Date().toISOString()
       };
       state.projects.push(project);
       setBusy(true);
       rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H").then(function () {
-        els.projectNameInput.value = "";
-        els.projectStartInput.value = "";
-        els.projectEndInput.value = "";
-        setStatus(els.fileStatus, "Project added.", "good");
-        renderAll();
-      }).catch(function (err) {
-        setStatus(els.fileStatus, messageFromError(err, "Could not add project."), "bad");
-      }).finally(function () { setBusy(false); });
+        els.projectNameInput.value = ""; els.projectStartInput.value = ""; els.projectEndInput.value = "";
+        setStatus(els.fileStatus, "Project added.", "good"); renderAll();
+      }).catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not add project."), "bad"); })
+        .finally(function () { setBusy(false); });
     }
     function deleteProject(projectId) {
       const project = state.projects.find(function (item) { return item.id === projectId; });
@@ -938,112 +903,241 @@
       state.projects = state.projects.filter(function (item) { return item.id !== projectId; });
       setBusy(true);
       rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H").then(function () {
-        setStatus(els.fileStatus, "Project removed.", "good");
-        renderAll();
-      }).catch(function (err) {
-        setStatus(els.fileStatus, messageFromError(err, "Could not remove project."), "bad");
-      }).finally(function () { setBusy(false); });
+        setStatus(els.fileStatus, "Project removed.", "good"); renderAll();
+      }).catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not remove project."), "bad"); })
+        .finally(function () { setBusy(false); });
     }
     function saveProject(projectId) {
       const project = state.projects.find(function (item) { return item.id === projectId; });
       if (!project) return;
-      const fields = Array.from(document.querySelectorAll("[data-project-id]")).filter(function (field) {
-        return field.dataset.projectId === projectId;
-      });
+      const fields = Array.from(document.querySelectorAll("[data-project-id]")).filter(function (f) { return f.dataset.projectId === projectId; });
       const next = {};
-      fields.forEach(function (field) {
-        next[field.dataset.projectField] = field.value.trim();
-      });
-      if (!next.name) {
-        setStatus(els.fileStatus, "Project name is required.", "warn");
-        return;
-      }
-      project.name = next.name;
-      project.startDate = next.startDate || "";
-      project.endDate = next.endDate || "";
-      project.updatedAt = new Date().toISOString();
+      fields.forEach(function (f) { next[f.dataset.projectField] = f.value.trim(); });
+      if (!next.name) { setStatus(els.fileStatus, "Project name is required.", "warn"); return; }
+      project.name = next.name; project.startDate = next.startDate || ""; project.endDate = next.endDate || ""; project.updatedAt = new Date().toISOString();
       setBusy(true);
       rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H").then(function () {
-        setStatus(els.fileStatus, "Project saved.", "good");
-        renderAll();
-      }).catch(function (err) {
-        setStatus(els.fileStatus, messageFromError(err, "Could not save project."), "bad");
-      }).finally(function () { setBusy(false); });
+        setStatus(els.fileStatus, "Project saved.", "good"); renderAll();
+      }).catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not save project."), "bad"); })
+        .finally(function () { setBusy(false); });
     }
+
+    /* ---------- Calendar view ---------- */
+    function renderCalendar() {
+      const start = windowStart();
+      const todayIso = toISO(new Date());
+      const sel = state.selectedDate || (state.selectedDate = defaultDate());
+      const lastDay = addDays(start, CAMP_WEEKS * 7 - 1);
+      els.calWindowLabel.textContent = "Nine weeks · " + monthDayFull(start) + " – " + monthDayFull(lastDay);
+
+      const counts = {};
+      let maxCount = 0;
+      for (let i = 0; i < CAMP_WEEKS * 7; i++) {
+        const iso = toISO(addDays(start, i));
+        const c = state.projects.filter(function (p) { return projectActiveOn(p, iso); }).length;
+        counts[iso] = c; if (c > maxCount) maxCount = c;
+      }
+
+      let html = '<div class="cal-corner"></div>';
+      for (let d = 0; d < 7; d++) html += '<div class="cal-dow">' + DOW_SHORT[(WEEK_START + d) % 7] + '</div>';
+      for (let w = 0; w < CAMP_WEEKS; w++) {
+        const wStart = addDays(start, w * 7);
+        const wEnd = addDays(start, w * 7 + 6);
+        html += '<div class="cal-week-label" title="' + escapeHtml(fmtRange(wStart, wEnd)) + '"><span>W' + (w + 1) + '</span><small>' + escapeHtml(MONTHS[wStart.getMonth()] + " " + wStart.getDate()) + '</small></div>';
+        for (let d = 0; d < 7; d++) {
+          const date = addDays(start, w * 7 + d);
+          const iso = toISO(date);
+          const c = counts[iso];
+          const heat = maxCount ? (0.12 + 0.68 * (c / maxCount)) : 0;
+          const classes = ["cal-day"];
+          if (iso === todayIso) classes.push("today");
+          if (iso === sel) classes.push("selected");
+          if (!c) classes.push("empty");
+          const firstOfMonth = date.getDate() === 1;
+          html += '<button class="' + classes.join(" ") + '" type="button" data-cal-day="' + iso + '" style="--heat:' + (c ? heat.toFixed(3) : 0) + '">' +
+            '<span class="cal-num">' + date.getDate() + (firstOfMonth ? ' <em>' + MONTHS[date.getMonth()] + '</em>' : '') + '</span>' +
+            (c ? '<span class="cal-count">' + c + '</span>' : '') +
+            '</button>';
+        }
+      }
+      els.calGrid.innerHTML = html;
+      renderDay();
+    }
+    function renderDay() {
+      const iso = state.selectedDate;
+      const date = parseISO(iso);
+      if (!date) { els.dayTitle.textContent = "Pick a day"; els.dayWeek.textContent = ""; els.dayStats.innerHTML = ""; els.dayList.innerHTML = ""; return; }
+      const active = state.projects.filter(function (p) { return projectActiveOn(p, iso); });
+      const byKid = {};
+      active.forEach(function (p) { (byKid[p.kidId] = byKid[p.kidId] || []).push(p); });
+      const kidIds = Object.keys(byKid);
+      const starting = active.filter(function (p) { return (p.startDate || "").slice(0, 10) === iso; }).length;
+      const ending = active.filter(function (p) { return (p.endDate || "").slice(0, 10) === iso; }).length;
+
+      els.dayTitle.textContent = DOW_FULL[date.getDay()] + ", " + monthDayFull(date);
+      const wIdx = weekIndexOfISO(iso);
+      els.dayWeek.textContent = (wIdx >= 0 && wIdx < CAMP_WEEKS) ? "Camp week " + (wIdx + 1) : "Outside the camp window";
+      els.dayStats.innerHTML =
+        '<span class="pill solid">' + kidIds.length + ' kids</span>' +
+        '<span class="pill red">' + active.length + ' projects</span>' +
+        '<span class="pill">' + starting + ' starting</span>' +
+        '<span class="pill">' + ending + ' ending</span>';
+
+      if (!active.length) { els.dayList.innerHTML = '<div class="empty">No projects active on this day.</div>'; return; }
+      els.dayList.innerHTML = kidIds.map(function (kidId) {
+        const kid = state.kids.find(function (k) { return k.id === kidId; }) || { name: "(unknown kid)" };
+        const meta = [kid.division, kid.side].filter(Boolean).map(function (m) { return '<span class="pill">' + escapeHtml(m) + '</span>'; }).join("");
+        const projs = byKid[kidId].map(function (p) {
+          const s = (p.startDate || "").slice(0, 10), e = (p.endDate || "").slice(0, 10);
+          let badge = "";
+          if (s === iso) badge += '<span class="badge start">Starts</span>';
+          if (e === iso) badge += '<span class="badge end">Ends</span>';
+          if (!e) badge += '<span class="badge ongoing">Ongoing</span>';
+          const range = (s ? monthDay(parseISO(s)) : "—") + (e ? " – " + monthDay(parseISO(e)) : "");
+          return '<div class="day-proj"><span class="day-proj-name">' + escapeHtml(p.name || "Untitled") + '</span>' +
+            '<span class="day-proj-range">' + escapeHtml(range) + '</span>' + badge + '</div>';
+        }).join("");
+        return '<div class="day-kid">' +
+          '<button class="day-kid-head" type="button" data-open-kid="' + escapeHtml(kidId) + '"><strong>' + escapeHtml(kid.name || "Unnamed") + '</strong>' + meta + '</button>' +
+          projs + '</div>';
+      }).join("");
+    }
+
+    /* ---------- Stats view ---------- */
+    function renderStats() {
+      const start = windowStart();
+      const todayIso = toISO(new Date());
+      const lastDay = addDays(start, CAMP_WEEKS * 7 - 1);
+      els.statsWindowLabel.textContent = "Nine weeks · " + monthDayFull(start) + " – " + monthDayFull(lastDay);
+
+      const activeToday = state.projects.filter(function (p) { return projectActiveOn(p, todayIso); });
+      let projectDays = 0;
+      const kidsActiveWindow = new Set();
+      const weekData = [];
+      for (let w = 0; w < CAMP_WEEKS; w++) {
+        let wDays = 0; const wKids = new Set();
+        const wStartIso = toISO(addDays(start, w * 7));
+        const wEndIso = toISO(addDays(start, w * 7 + 6));
+        for (let d = 0; d < 7; d++) {
+          const iso = toISO(addDays(start, w * 7 + d));
+          const act = state.projects.filter(function (p) { return projectActiveOn(p, iso); });
+          wDays += act.length; projectDays += act.length;
+          act.forEach(function (p) { wKids.add(p.kidId); kidsActiveWindow.add(p.kidId); });
+        }
+        let starts = 0, ends = 0;
+        state.projects.forEach(function (p) {
+          const s = (p.startDate || "").slice(0, 10), e = (p.endDate || "").slice(0, 10);
+          if (s && s >= wStartIso && s <= wEndIso) starts++;
+          if (e && e >= wStartIso && e <= wEndIso) ends++;
+        });
+        weekData.push({ w: w, days: wDays, kids: wKids.size, starts: starts, ends: ends, range: fmtRange(addDays(start, w * 7), addDays(start, w * 7 + 6)) });
+      }
+      const maxWeek = weekData.reduce(function (m, x) { return Math.max(m, x.days); }, 0);
+
+      function statCard(value, label) {
+        return '<div class="card stat-card"><div class="stat-value">' + value + '</div><div class="stat-label">' + escapeHtml(label) + '</div></div>';
+      }
+      els.statsSummary.innerHTML =
+        statCard(state.kids.length, "Kids on file") +
+        statCard(state.projects.length, "Total projects") +
+        statCard(activeToday.length, "Active today") +
+        statCard(kidsActiveWindow.size, "Kids active in window") +
+        statCard(projectDays, "Project-days (9 wks)");
+
+      els.statsWeeks.innerHTML = weekData.map(function (wd) {
+        const pct = maxWeek ? Math.round((wd.days / maxWeek) * 100) : 0;
+        return '<div class="week-row">' +
+          '<div class="week-name">Week ' + (wd.w + 1) + '<small>' + escapeHtml(wd.range) + '</small></div>' +
+          '<div class="week-bar"><i style="width:' + pct + '%"></i></div>' +
+          '<div class="week-meta">' + wd.days + ' proj-days · ' + wd.kids + ' kids</div>' +
+          '</div>';
+      }).join("");
+
+      const kidRows = state.kids.map(function (kid) {
+        const projs = state.projects.filter(function (p) { return p.kidId === kid.id; });
+        let activeDays = 0;
+        for (let i = 0; i < CAMP_WEEKS * 7; i++) {
+          const iso = toISO(addDays(start, i));
+          if (projs.some(function (p) { return projectActiveOn(p, iso); })) activeDays++;
+        }
+        return { kid: kid, count: projs.length, activeDays: activeDays, activeNow: projs.some(function (p) { return projectActiveOn(p, todayIso); }) };
+      }).sort(function (a, b) { return b.activeDays - a.activeDays || a.kid.name.localeCompare(b.kid.name); });
+
+      if (!kidRows.length) { els.statsKids.innerHTML = '<div class="empty">No kids on file yet.</div>'; return; }
+      els.statsKids.innerHTML = kidRows.map(function (row) {
+        const sub = [row.kid.division, row.kid.side].filter(Boolean).join(" · ") || "No division";
+        return '<button class="kid-stat-row" type="button" data-open-kid="' + escapeHtml(row.kid.id) + '">' +
+          '<div><div class="ks-name">' + escapeHtml(row.kid.name || "Unnamed") + (row.activeNow ? ' <span class="badge start">Active</span>' : '') + '</div>' +
+          '<div class="ks-sub">' + escapeHtml(sub) + '</div></div>' +
+          '<div class="ks-metrics"><span class="pill">' + row.count + ' proj</span><span class="pill red">' + row.activeDays + ' days</span></div>' +
+          '</button>';
+      }).join("");
+    }
+
+    /* ---------- Session ---------- */
     function signIn() {
-      setStatus(els.loginStatus, "Opening Google sign-in...");
+      setStatus(els.loginStatus, "Opening Google sign-in…");
       setBusy(true);
       ensureAccessToken(true).then(function () {
-        setStatus(els.loginStatus, "Preparing kid files...");
+        setStatus(els.loginStatus, "Preparing kid files…");
         return loadProfile();
       }).then(ensureWorkbook).then(readAllSheets).then(function () {
         els.loginView.classList.add("hidden");
-        els.appView.classList.remove("hidden");
+        els.appTabs.classList.remove("hidden");
         els.refreshBtn.classList.remove("hidden");
         els.logoutBtn.classList.remove("hidden");
         if (state.kids.length && !state.selectedKidId) state.selectedKidId = state.kids[0].id;
-        renderAll();
-      }).catch(function (err) {
-        setStatus(els.loginStatus, messageFromError(err, "Could not sign in."), "bad");
-      }).finally(function () { setBusy(false); });
+        state.selectedDate = defaultDate();
+        setView("files");
+      }).catch(function (err) { setStatus(els.loginStatus, messageFromError(err, "Could not sign in."), "bad"); })
+        .finally(function () { setBusy(false); });
     }
     function refreshData() {
       setBusy(true);
       readAllSheets().then(function () {
         renderAll();
         setStatus(els.fileStatus, "Refreshed.", "good");
-      }).catch(function (err) {
-        setStatus(els.fileStatus, messageFromError(err, "Could not refresh."), "bad");
-      }).finally(function () { setBusy(false); });
+      }).catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not refresh."), "bad"); })
+        .finally(function () { setBusy(false); });
     }
     function logout() {
       if (state.accessToken && window.google && google.accounts && google.accounts.oauth2) {
         google.accounts.oauth2.revoke(state.accessToken, function () {});
       }
-      state.accessToken = "";
-      state.accessTokenExpiresAt = 0;
-      state.spreadsheetId = "";
-      state.currentUser = null;
-      state.kids = [];
-      state.projects = [];
-      state.selectedKidId = "";
-      els.appView.classList.add("hidden");
+      state.accessToken = ""; state.accessTokenExpiresAt = 0; state.spreadsheetId = "";
+      state.currentUser = null; state.kids = []; state.projects = []; state.selectedKidId = "";
+      els.filesView.classList.add("hidden"); els.calendarView.classList.add("hidden"); els.statsView.classList.add("hidden");
       els.loginView.classList.remove("hidden");
-      els.userChip.classList.add("hidden");
-      els.openSheetBtn.classList.add("hidden");
-      els.refreshBtn.classList.add("hidden");
-      els.logoutBtn.classList.add("hidden");
+      els.appTabs.classList.add("hidden");
+      els.userChip.classList.add("hidden"); els.openSheetBtn.classList.add("hidden");
+      els.refreshBtn.classList.add("hidden"); els.logoutBtn.classList.add("hidden");
       setStatus(els.loginStatus, "");
     }
     function bindEvents() {
       els.loginBtn.addEventListener("click", signIn);
       els.logoutBtn.addEventListener("click", logout);
       els.refreshBtn.addEventListener("click", refreshData);
-      els.openSheetBtn.addEventListener("click", function () {
-        if (state.spreadsheetUrl) window.open(state.spreadsheetUrl, "_blank", "noopener");
-      });
+      els.openSheetBtn.addEventListener("click", function () { if (state.spreadsheetUrl) window.open(state.spreadsheetUrl, "_blank", "noopener"); });
+      els.tabFiles.addEventListener("click", function () { setView("files"); });
+      els.tabCalendar.addEventListener("click", function () { setView("calendar"); });
+      els.tabStats.addEventListener("click", function () { setView("stats"); });
+      els.calTodayBtn.addEventListener("click", function () { state.selectedDate = defaultDate(); renderCalendar(); });
       els.kidSearchInput.addEventListener("input", renderKids);
       els.newFromSearchBtn.addEventListener("click", function () { newDraft(els.kidSearchInput.value.trim()); });
       els.saveKidBtn.addEventListener("click", saveKidFile);
       els.deleteKidBtn.addEventListener("click", deleteKidFile);
       els.addProjectBtn.addEventListener("click", addProject);
       document.addEventListener("click", function (event) {
+        const calDay = event.target.closest("[data-cal-day]");
+        if (calDay) { state.selectedDate = calDay.dataset.calDay; renderCalendar(); return; }
+        const openKid = event.target.closest("[data-open-kid]");
+        if (openKid) { state.selectedKidId = openKid.dataset.openKid; setView("files"); return; }
         const selectKid = event.target.closest("[data-select-kid]");
-        if (selectKid) {
-          state.selectedKidId = selectKid.dataset.selectKid;
-          renderAll();
-          return;
-        }
+        if (selectKid) { state.selectedKidId = selectKid.dataset.selectKid; renderAll(); return; }
         const createFromEmpty = event.target.closest("[data-create-from-empty]");
-        if (createFromEmpty) {
-          newDraft(els.kidSearchInput.value.trim());
-          return;
-        }
+        if (createFromEmpty) { newDraft(els.kidSearchInput.value.trim()); return; }
         const deleteProjectBtn = event.target.closest("[data-delete-project]");
-        if (deleteProjectBtn) {
-          deleteProject(deleteProjectBtn.dataset.deleteProject);
-          return;
-        }
+        if (deleteProjectBtn) { deleteProject(deleteProjectBtn.dataset.deleteProject); return; }
         const saveProjectBtn = event.target.closest("[data-save-project]");
         if (saveProjectBtn) saveProject(saveProjectBtn.dataset.saveProject);
       });
