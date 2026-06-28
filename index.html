@@ -1105,6 +1105,7 @@
     function binKid(kidId) {
       const kid = state.kids.find(function (k) { return k.id === kidId; });
       if (!kid) return;
+      if (!confirm("Move " + (kid.name || "this kid file") + " to the Bin? Their projects go too. You can restore it later.")) return;
       const ts = new Date().toISOString();
       kid.deletedAt = ts;
       state.kids = state.kids.filter(function (k) { return k.id !== kid.id; });
@@ -1178,6 +1179,7 @@
     function deleteProject(projectId) {
       const project = state.projects.find(function (item) { return item.id === projectId; });
       if (!project) return;
+      if (!confirm("Move \"" + (project.name || "this project") + "\" to the Bin? You can restore it later.")) return;
       project.deletedAt = new Date().toISOString();
       state.projects = state.projects.filter(function (item) { return item.id !== projectId; });
       state.binnedProjects.push(project);
@@ -1378,6 +1380,7 @@
     function removeCheckin(checkinId) {
       const c = state.checkins.find(function (item) { return item.id === checkinId; });
       if (!c) return;
+      if (!confirm("Remove " + (c.kidName || "this kid") + " from Period " + c.period + "?")) return;
       state.checkins = state.checkins.filter(function (item) { return item.id !== checkinId; });
       setBusy(true);
       persistCheckins().then(function () {
