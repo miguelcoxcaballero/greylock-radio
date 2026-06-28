@@ -282,6 +282,8 @@
       overflow: visible;
     }
     .kid-cal-line { fill: none; stroke: var(--good); stroke-width: .045; stroke-linecap: round; stroke-linejoin: round; opacity: .42; }
+    .kid-project-line { fill: none; stroke-width: .09; stroke-linecap: round; stroke-linejoin: round; opacity: .72; }
+    .kid-project-line.shadow { stroke: #fff; stroke-width: .14; opacity: .9; }
     .kid-cal-day {
       position: relative;
       z-index: 2;
@@ -294,6 +296,7 @@
       align-content: start;
     }
     .kid-cal-day.has-attendance { background: #e6f4ea; border-bottom-color: rgba(24,128,56,.35); }
+    .kid-cal-day.has-project { box-shadow: inset 0 -3px 0 var(--project-color, var(--red)); }
     .kid-cal-num { font-size: 0.78rem; color: var(--text-2); font-weight: 500; }
     .kid-cal-num em { font-style: normal; color: var(--text-3); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
     .kid-cal-badges { display: flex; flex-wrap: wrap; gap: 3px; }
@@ -310,8 +313,25 @@
       line-height: 1.2;
       white-space: nowrap;
     }
+    .kid-project-dots { display: flex; flex-wrap: wrap; gap: 3px; margin-top: auto; }
+    .kid-project-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--project-color);
+      box-shadow: 0 0 0 1px rgba(255,255,255,.9), 0 0 0 2px color-mix(in srgb, var(--project-color) 28%, transparent);
+    }
     .kid-cycle-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
     .kid-cycle-legend .pill { border-color: rgba(24,128,56,.25); color: var(--good); background: #e6f4ea; }
+    .kid-cycle-legend .project-pill { border-color: color-mix(in srgb, var(--project-color) 38%, var(--border)); color: var(--text); background: color-mix(in srgb, var(--project-color) 14%, #fff); }
+    .kid-cycle-legend .project-pill::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--project-color);
+      margin-right: 6px;
+    }
 
     /* bin */
     .bin-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
@@ -766,6 +786,7 @@
     const MONTHS_FULL = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
     const DOW_SHORT = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    const PROJECT_COLORS = ["#d71920", "#1a73e8", "#f9ab00", "#9334e6", "#00a884", "#f4511e", "#5f6368", "#c5221f", "#00796b", "#8e24aa"];
 
     const els = {};
     const state = {
@@ -1583,6 +1604,26 @@
       const time = period ? periodTime(parts[0], period) : "";
       return [side, period ? "P" + period : "", time].filter(Boolean).join(" - ");
     }
+    function projectColor(project, index) {
+      let hash = 0;
+      const seed = String(project && (project.id || project.name) || index || "");
+      for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
+      return PROJECT_COLORS[Math.abs(hash) % PROJECT_COLORS.length];
+    }
+    function clampOffset(offset) {
+      return Math.max(0, Math.min(CAMP_WEEKS * 7 - 1, offset));
+    }
+    function projectOffsets(project, start) {
+      const startDate = parseISO((project.startDate || "").slice(0, 10));
+      if (!startDate) return null;
+      const endDate = parseISO((project.endDate || "").slice(0, 10)) || addDays(start, CAMP_WEEKS * 7 - 1);
+      const rawFirst = Math.round((startDate - start) / 86400000);
+      const rawLast = Math.round((endDate - start) / 86400000);
+      if (rawLast < 0 || rawFirst >= CAMP_WEEKS * 7 || rawLast < rawFirst) return null;
+      let first = clampOffset(rawFirst);
+      let last = clampOffset(rawLast);
+      return { first: first, last: last };
+    }
     function renderKidAttendanceCalendar() {
       if (!els.kidAttendanceMap) return;
       const kid = selectedKid();
@@ -1594,6 +1635,7 @@
       }
       const start = windowStart();
       const list = state.checkins.filter(function (c) { return c.kidId === kid.id; });
+      const kidProjects = projectsForKid(kid.id).filter(function (p) { return !!(p.startDate || "").slice(0, 10); });
       const byDate = {};
       const cycleDates = {};
       list.forEach(function (c) {
@@ -1608,8 +1650,8 @@
       });
       const attendedDays = Object.keys(byDate);
       els.kidAttendanceCount.textContent = attendedDays.length + (attendedDays.length === 1 ? " day" : " days");
-      if (!attendedDays.length) {
-        els.kidAttendanceMap.innerHTML = '<div class="empty">No attendance yet. Check this kid in from the Calendar tab.</div>';
+      if (!attendedDays.length && !kidProjects.length) {
+        els.kidAttendanceMap.innerHTML = '<div class="empty">No attendance or dated projects yet. Check this kid in from the Calendar tab or add project dates above.</div>';
         els.kidAttendanceLegend.innerHTML = "";
         return;
       }
@@ -1621,6 +1663,29 @@
 
       const paths = [];
       const legend = [];
+      const projectByOffset = {};
+      const projectPaths = [];
+      const projectLegend = [];
+      kidProjects.forEach(function (project, index) {
+        const offsets = projectOffsets(project, start);
+        if (!offsets) return;
+        const color = projectColor(project, index);
+        for (let o = offsets.first; o <= offsets.last; o++) {
+          (projectByOffset[o] = projectByOffset[o] || []).push({ project: project, color: color });
+        }
+        for (let row = Math.floor(offsets.first / 7); row <= Math.floor(offsets.last / 7); row++) {
+          const rowStart = row * 7;
+          const segStart = Math.max(offsets.first, rowStart);
+          const segEnd = Math.min(offsets.last, rowStart + 6);
+          const y = row + 0.82 + ((index % 3) * 0.045);
+          const x1 = (segStart % 7) + 0.16;
+          const x2 = (segEnd % 7) + 0.84;
+          const points = x1 + "," + y + " " + x2 + "," + y;
+          projectPaths.push('<polyline class="kid-project-line shadow" points="' + points + '"></polyline>');
+          projectPaths.push('<polyline class="kid-project-line" style="stroke:' + escapeHtml(color) + '" points="' + points + '"></polyline>');
+        }
+        projectLegend.push('<span class="pill project-pill" style="--project-color:' + escapeHtml(color) + '">' + escapeHtml(project.name || "Untitled project") + '</span>');
+      });
       Object.keys(cycleDates).forEach(function (key) {
         const dates = Object.keys(cycleDates[key]).sort();
         if (dates.length < 2) return;
@@ -1644,9 +1709,15 @@
           return '<span class="kid-cal-badge" title="' + escapeHtml(checkinCycleLabel(checkinCycleKey(c))) + '">' +
             escapeHtml((c.side || "").slice(0, 1)) + ' P' + escapeHtml(c.period || "") + '</span>';
         }).join("");
-        days += '<div class="kid-cal-day' + (hits.length ? ' has-attendance' : '') + '">' +
+        const projectHits = projectByOffset[i] || [];
+        const projectDots = projectHits.slice(0, 5).map(function (item) {
+          return '<span class="kid-project-dot" style="--project-color:' + escapeHtml(item.color) + '" title="' + escapeHtml(item.project.name || "Untitled project") + '"></span>';
+        }).join("");
+        days += '<div class="kid-cal-day' + (hits.length ? ' has-attendance' : '') + (projectHits.length ? ' has-project' : '') + '"' +
+          (projectHits[0] ? ' style="--project-color:' + escapeHtml(projectHits[0].color) + '"' : '') + '>' +
           '<span class="kid-cal-num">' + date.getDate() + (firstOfMonth ? ' <em>' + MONTHS[date.getMonth()] + '</em>' : '') + '</span>' +
           (badgeHtml ? '<div class="kid-cal-badges">' + badgeHtml + '</div>' : '') +
+          (projectDots ? '<div class="kid-project-dots">' + projectDots + '</div>' : '') +
           '</div>';
       }
 
@@ -1654,10 +1725,11 @@
         '<div class="kid-attendance">' +
         '<div class="kid-cal-dows">' + dows + '</div>' +
         '<div class="kid-cal-row"><div class="kid-cal-weeks">' + weeks + '</div><div class="kid-cal-board">' +
-        '<svg class="kid-cal-lines" viewBox="0 0 7 10" preserveAspectRatio="none" aria-hidden="true">' + paths.join("") + '</svg>' +
+        '<svg class="kid-cal-lines" viewBox="0 0 7 10" preserveAspectRatio="none" aria-hidden="true">' + projectPaths.join("") + paths.join("") + '</svg>' +
         days +
         '</div></div></div>';
-      els.kidAttendanceLegend.innerHTML = legend.length ? legend.join("") : '<span class="muted" style="font-size:0.82rem;">No repeated side/period cycle yet.</span>';
+      const cycleLegend = legend.length ? legend.join("") : '<span class="muted" style="font-size:0.82rem;">No repeated side/period cycle yet.</span>';
+      els.kidAttendanceLegend.innerHTML = projectLegend.concat([cycleLegend]).join("");
     }
     function renderKidCheckins() {
       if (!els.kidCheckins) return;
