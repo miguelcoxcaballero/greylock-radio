@@ -616,6 +616,7 @@
     const SIDES = ["Junior side", "Senior side"];
     const TOKEN_FRESH_MS = 60000;
     const TOKEN_STORAGE_KEY = "greylock_radio_oauth";
+    const AUTH_MARKER_KEY = "greylock_radio_signed_in"; // set once the user has signed in; lets us resume silently
     const EXPIRY_REFRESH_MARGIN_MS = 120000; // attempt a silent refresh ~2 min before expiry
     const SWIPE_W = 88; // px revealed by swipe-to-delete
     const CAMP_WEEKS = 9;
@@ -785,8 +786,22 @@
     }
     /* ---------- Token persistence + expiry safety ---------- */
     function saveStoredToken() {
-      try { localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify({ accessToken: state.accessToken, expiresAt: state.accessTokenExpiresAt })); } catch (e) {}
+      try {
+        localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify({ accessToken: state.accessToken, expiresAt: state.accessTokenExpiresAt }));
+        localStorage.setItem(AUTH_MARKER_KEY, "1");
+      } catch (e) {}
     }
+    function whenGoogleReady() {
+      return new Promise(function (resolve, reject) {
+        let n = 0;
+        (function poll() {
+          if (state.tokenClient) return resolve();
+          if (n++ > 50) return reject(new Error("Google sign-in is still loading.")); // ~10s
+          setTimeout(poll, 200);
+        })();
+      });
+    }
+    function silentToken() { return whenGoogleReady().then(forceSilentRefresh); }
     function loadStoredToken() {
       try {
         const data = JSON.parse(localStorage.getItem(TOKEN_STORAGE_KEY));
@@ -1563,18 +1578,31 @@
     }
     function resumeSession() {
       const stored = loadStoredToken();
-      if (!stored) return;
-      if (stored.expiresAt <= Date.now() + TOKEN_FRESH_MS) { clearStoredToken(); return; } // too close to expiry to trust
-      state.accessToken = stored.accessToken;
-      state.accessTokenExpiresAt = stored.expiresAt;
-      state.sessionExpired = false;
+      const hasValid = !!(stored && stored.expiresAt > Date.now() + TOKEN_FRESH_MS);
+      if (stored && !hasValid) clearStoredToken(); // expired/near-expiry token is not trustworthy
+      // Nothing to resume: a first-time visitor with no prior sign-in just sees the login screen.
+      if (!hasValid && localStorage.getItem(AUTH_MARKER_KEY) !== "1") return;
       setBusy(true);
-      setStatus(els.loginStatus, "Restoring your session…");
-      beginSession().catch(function () {
-        // Stored token was rejected or data failed to load: drop it and require a fresh sign-in.
-        clearStoredToken();
-        state.accessToken = ""; state.accessTokenExpiresAt = 0;
-        setStatus(els.loginStatus, "");
+      setStatus(els.loginStatus, hasValid ? "Restoring your session…" : "Signing you back in…");
+      let getToken;
+      if (hasValid) {
+        state.accessToken = stored.accessToken;
+        state.accessTokenExpiresAt = stored.expiresAt;
+        state.sessionExpired = false;
+        getToken = Promise.resolve();
+      } else {
+        // No usable token, but the user signed in before: get a fresh one silently (no popup, no click).
+        getToken = silentToken();
+      }
+      getToken.then(beginSession).catch(function (err) {
+        // A stored token that Google rejected: try one silent refresh before falling back to login.
+        if (hasValid) {
+          state.accessToken = ""; state.accessTokenExpiresAt = 0; clearStoredToken();
+          return silentToken().then(beginSession);
+        }
+        throw err;
+      }).catch(function () {
+        setStatus(els.loginStatus, ""); // silent resume not possible (e.g. signed out of Google) — show login
       }).finally(function () { setBusy(false); });
     }
     function reauthorize() {
@@ -1600,6 +1628,7 @@
       }
       if (state.expiryTimer) { clearTimeout(state.expiryTimer); state.expiryTimer = null; }
       clearStoredToken();
+      try { localStorage.removeItem(AUTH_MARKER_KEY); } catch (e) {} // explicit sign-out: don't auto-resume next time
       clearExpired();
       state.accessToken = ""; state.accessTokenExpiresAt = 0; state.spreadsheetId = "";
       state.currentUser = null; state.kids = []; state.projects = []; state.checkins = [];
