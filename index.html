@@ -278,22 +278,45 @@
     .day-list { display: grid; gap: 10px; }
 
     /* segmented control + period check-in */
-    .seg { display: inline-flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 3px; gap: 3px; margin-bottom: 14px; }
-    .seg-btn { border: 0; background: transparent; color: var(--text-2); border-radius: 999px; padding: 6px 14px; font-weight: 500; font-size: 0.82rem; }
+    .seg { display: flex; width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 3px; gap: 3px; margin-bottom: 14px; }
+    .seg-btn { flex: 1; border: 0; background: transparent; color: var(--text-2); border-radius: 999px; padding: 8px 12px; font-weight: 600; font-size: 0.84rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
     .seg-btn small { font-weight: 400; opacity: .8; }
     .seg-btn:hover { color: var(--text); }
-    .seg-btn.active { background: var(--red); color: #fff; }
+    .seg-btn.active { background: var(--red); color: #fff; box-shadow: var(--elev-1); }
     .seg-btn.active small { opacity: .9; }
     .periods-list { display: grid; gap: 10px; }
-    .period { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+    .period { border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: grid; gap: 10px; background: var(--surface); }
     .period-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .period-head strong { font-weight: 500; }
+    .period-id { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+    .period-n { font-weight: 600; }
     .period-time { color: var(--text-2); font-size: 0.8rem; }
+    .period-count { min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); font-weight: 600; font-size: 0.78rem; display: inline-flex; align-items: center; justify-content: center; }
+    .period-count.on { background: var(--red); border-color: var(--red); color: #fff; }
     .period-kids { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    .chk-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--red-container); color: var(--red-dark); border-radius: 999px; padding: 3px 4px 3px 11px; font-size: 0.8rem; font-weight: 500; }
+    .period-empty { color: var(--text-3); font-size: 0.8rem; }
+    .chk-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--red-container); color: var(--red-dark); border-radius: 999px; padding: 4px 4px 4px 12px; font-size: 0.8rem; font-weight: 500; }
     .chk-x { border: 0; background: transparent; color: var(--red-dark); width: 18px; height: 18px; border-radius: 50%; line-height: 1; font-size: 1rem; padding: 0; display: grid; place-items: center; }
     .chk-x:hover { background: rgba(179,21,27,.15); }
-    .period-picker { height: 36px; padding: 0 10px; border-radius: 8px; font-size: 0.84rem; color: var(--text-2); }
+    .period-add { width: 100%; border: 1px dashed var(--border); background: var(--surface-2); color: var(--text); border-radius: 8px; height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; font-size: 0.84rem; }
+    .period-add:hover { background: var(--red-container); border-color: var(--red); color: var(--red-dark); }
+    .period-add svg { width: 18px; height: 18px; fill: currentColor; }
+
+    /* check-in search popup */
+    .modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .modal-backdrop { position: absolute; inset: 0; background: rgba(32,33,36,.5); }
+    .modal-card { position: relative; width: min(440px, 100%); max-height: 82vh; background: var(--surface); border-radius: 16px; box-shadow: var(--elev-3); display: flex; flex-direction: column; overflow: hidden; }
+    .modal-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 16px 16px 10px; }
+    .modal-head h3 { font-size: 1.1rem; }
+    .modal-search { margin: 0 16px; }
+    .modal-search input { height: 44px; }
+    .search-count { padding: 10px 18px 4px; font-size: 0.78rem; }
+    .search-results { overflow: auto; padding: 4px 8px 12px; display: grid; gap: 2px; }
+    .result-row { width: 100%; text-align: left; border: 0; background: transparent; border-radius: 10px; padding: 11px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .result-row:hover { background: var(--hover); }
+    .rr-info { min-width: 0; }
+    .rr-name { font-weight: 500; }
+    .rr-sub { color: var(--text-2); font-size: 0.78rem; margin-top: 2px; }
+    .rr-add { color: var(--red); font-weight: 600; font-size: 0.82rem; white-space: nowrap; }
     .day-kid { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
     .day-kid-head { width: 100%; text-align: left; background: var(--surface-2); border: 0; padding: 10px 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .day-kid-head:hover { background: var(--hover); }
@@ -339,6 +362,8 @@
       .view { padding: 14px; }
       .tabs { padding: 0 6px; }
       .tab { padding: 0 12px; }
+      .modal { align-items: flex-end; padding: 0; }
+      .modal-card { width: 100%; max-height: 88vh; border-radius: 16px 16px 0 0; }
     }
   </style>
 </head>
@@ -587,6 +612,28 @@
         <div class="card card-pad"><div id="binList"></div></div>
       </section>
     </main>
+
+    <!-- Check-in search popup -->
+    <div id="searchModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Check in kids">
+      <div class="modal-backdrop" data-close-search></div>
+      <div class="modal-card">
+        <div class="modal-head">
+          <div>
+            <h3 id="searchModalTitle">Check in</h3>
+            <div id="searchModalSub" class="muted" style="font-size:0.82rem;"></div>
+          </div>
+          <button id="searchModalClose" class="icon-btn" type="button" aria-label="Close" data-close-search>
+            <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+        <div class="search modal-search">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+          <input id="checkinSearchInput" type="search" placeholder="Search kids by name" autocomplete="off">
+        </div>
+        <div id="searchCount" class="search-count muted"></div>
+        <div id="searchResults" class="search-results"></div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -644,6 +691,8 @@
       view: "files",
       selectedDate: "",
       checkinSide: "Junior side",
+      searchPeriod: 0,
+      searchQuery: "",
       expiryTimer: null,
       sessionExpired: false
     };
@@ -663,6 +712,7 @@
         "projectNameInput", "projectStartInput", "projectEndInput", "addProjectBtn", "projectsList",
         "calWindowLabel", "calTodayBtn", "calGrid", "dayTitle", "dayWeek", "dayStats", "dayList",
         "periodSide", "dayPeriods", "dayCheckStatus",
+        "searchModal", "searchModalClose", "searchModalTitle", "searchModalSub", "checkinSearchInput", "searchResults", "searchCount",
         "statsWindowLabel", "statsSummary", "statsWeeks", "statsKids"
       ].forEach(function (id) { els[id] = $(id); });
     }
@@ -825,7 +875,7 @@
         if (els[id]) els[id].disabled = locked;
       });
       if (els.emptyBinBtn) els.emptyBinBtn.disabled = locked;
-      document.querySelectorAll("[data-save-project],[data-delete-project],[data-checkin-period],[data-uncheck],[data-bin-kid],[data-restore-kid],[data-destroy-kid],[data-restore-project],[data-destroy-project]").forEach(function (b) { b.disabled = locked; });
+      document.querySelectorAll("[data-save-project],[data-delete-project],[data-add-period],[data-checkin-kid],[data-uncheck],[data-bin-kid],[data-restore-kid],[data-destroy-kid],[data-restore-project],[data-destroy-project]").forEach(function (b) { b.disabled = locked; });
     }
     function enterExpired() {
       if (state.expiryTimer) { clearTimeout(state.expiryTimer); state.expiryTimer = null; }
@@ -1246,11 +1296,14 @@
       const lastDay = addDays(start, CAMP_WEEKS * 7 - 1);
       els.calWindowLabel.textContent = "Ten weeks · " + monthDayFull(start) + " – " + monthDayFull(lastDay);
 
+      // Calendar reflects check-ins: distinct kids checked in each day.
+      const checkinKidsByDay = {};
+      liveCheckins().forEach(function (c) { (checkinKidsByDay[c.date] = checkinKidsByDay[c.date] || {})[c.kidId] = true; });
       const counts = {};
       let maxCount = 0;
       for (let i = 0; i < CAMP_WEEKS * 7; i++) {
         const iso = toISO(addDays(start, i));
-        const c = state.projects.filter(function (p) { return projectActiveOn(p, iso); }).length;
+        const c = checkinKidsByDay[iso] ? Object.keys(checkinKidsByDay[iso]).length : 0;
         counts[iso] = c; if (c > maxCount) maxCount = c;
       }
 
@@ -1270,7 +1323,9 @@
           if (iso === sel) classes.push("selected");
           if (!c) classes.push("empty");
           const firstOfMonth = date.getDate() === 1;
-          html += '<button class="' + classes.join(" ") + '" type="button" data-cal-day="' + iso + '" style="--heat:' + (c ? heat.toFixed(3) : 0) + '">' +
+          html += '<button class="' + classes.join(" ") + '" type="button" data-cal-day="' + iso + '"' +
+            (c ? ' title="' + c + (c === 1 ? ' kid' : ' kids') + ' checked in"' : '') +
+            ' style="--heat:' + (c ? heat.toFixed(3) : 0) + '">' +
             '<span class="cal-num">' + date.getDate() + (firstOfMonth ? ' <em>' + MONTHS[date.getMonth()] + '</em>' : '') + '</span>' +
             (c ? '<span class="cal-count">' + c + '</span>' : '') +
             '</button>';
@@ -1345,25 +1400,58 @@
           escapeHtml(s.replace(" side", "")) + ' <small>' + PERIODS[s].length + ' periods · ' + total + '</small></button>';
       }).join("");
 
-      // kids eligible for this side: matching side, plus kids with no side set
-      const eligible = state.kids.filter(function (k) { return !k.side || k.side === side; }).sort(sortKids);
       els.dayPeriods.innerHTML = PERIODS[side].map(function (p) {
         const here = shown.filter(function (c) { return c.date === iso && c.side === side && c.period === p.n; });
-        const hereIds = here.map(function (c) { return c.kidId; });
         const chips = here.length ? here.map(function (c) {
           return '<span class="chk-chip">' + escapeHtml(c.kidName || "Unknown") +
             '<button type="button" class="chk-x" data-uncheck="' + escapeHtml(c.id) + '" title="Remove" aria-label="Remove">&times;</button></span>';
-        }).join("") : '<span class="muted" style="font-size:0.8rem;">No one checked in</span>';
-        const options = eligible.filter(function (k) { return hereIds.indexOf(k.id) === -1; })
-          .map(function (k) { return '<option value="' + escapeHtml(k.id) + '">' + escapeHtml(k.name || "Unnamed") + '</option>'; }).join("");
+        }).join("") : '<span class="period-empty">No one checked in yet</span>';
         return '<div class="period">' +
-          '<div class="period-head"><div><strong>Period ' + p.n + '</strong> <span class="period-time">' + escapeHtml(p.time) + '</span></div>' +
-          '<span class="pill">' + here.length + '</span></div>' +
+          '<div class="period-head"><div class="period-id"><span class="period-n">Period ' + p.n + '</span><span class="period-time">' + escapeHtml(p.time) + '</span></div>' +
+          '<span class="period-count' + (here.length ? " on" : "") + '">' + here.length + '</span></div>' +
           '<div class="period-kids">' + chips + '</div>' +
-          '<select class="period-picker" data-checkin-period="' + p.n + '"><option value="">+ Check in a kid…</option>' + options + '</select>' +
+          '<button class="period-add" type="button" data-add-period="' + p.n + '">' +
+          '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Add kids</button>' +
           '</div>';
       }).join("");
       if (state.sessionExpired) lockWrites(true);
+    }
+    function eligibleForSide(side) { return state.kids.filter(function (k) { return !k.side || k.side === side; }).sort(sortKids); }
+    function openCheckinSearch(period) {
+      if (state.sessionExpired || !state.selectedDate) return;
+      state.searchPeriod = period;
+      state.searchQuery = "";
+      els.checkinSearchInput.value = "";
+      const t = periodTime(state.checkinSide, period);
+      const d = parseISO(state.selectedDate);
+      els.searchModalTitle.textContent = "Check in · Period " + period;
+      els.searchModalSub.textContent = state.checkinSide.replace(" side", "") + " side" + (t ? " · " + t : "") + (d ? " · " + monthDay(d) : "");
+      els.searchModal.classList.remove("hidden");
+      renderSearchResults();
+      setTimeout(function () { els.checkinSearchInput.focus(); }, 30);
+    }
+    function closeCheckinSearch() { els.searchModal.classList.add("hidden"); state.searchPeriod = 0; }
+    function renderSearchResults() {
+      const iso = state.selectedDate, side = state.checkinSide, period = state.searchPeriod;
+      const q = (state.searchQuery || "").trim().toLowerCase();
+      const hereIds = {};
+      liveCheckins().filter(function (c) { return c.date === iso && c.side === side && c.period === period; }).forEach(function (c) { hereIds[c.kidId] = true; });
+      const list = eligibleForSide(side).filter(function (k) {
+        if (hereIds[k.id]) return false;
+        return !q || (k.name || "").toLowerCase().indexOf(q) !== -1 || (k.division || "").toLowerCase().indexOf(q) !== -1;
+      });
+      const checkedCount = Object.keys(hereIds).length;
+      els.searchCount.textContent = checkedCount + (checkedCount === 1 ? " kid" : " kids") + " checked in to this period";
+      if (!list.length) {
+        els.searchResults.innerHTML = '<div class="empty">' + (q ? "No matching kids on this side." : "Everyone eligible is already checked in.") + '</div>';
+        return;
+      }
+      els.searchResults.innerHTML = list.map(function (k) {
+        const sub = [k.division, k.side].filter(Boolean).join(" · ") || "No division";
+        return '<button class="result-row" type="button" data-checkin-kid="' + escapeHtml(k.id) + '">' +
+          '<div class="rr-info"><div class="rr-name">' + escapeHtml(k.name || "Unnamed") + '</div><div class="rr-sub">' + escapeHtml(sub) + '</div></div>' +
+          '<span class="rr-add">Check in</span></button>';
+      }).join("");
     }
     function addCheckin(period, kidId) {
       const iso = state.selectedDate, side = state.checkinSide;
@@ -1373,7 +1461,9 @@
       state.checkins.push({ id: makeId("chk", kid.name), date: iso, side: side, period: period, kidId: kidId, kidName: kid.name, updatedAt: new Date().toISOString() });
       setBusy(true);
       persistCheckins().then(function () {
-        setStatus(els.dayCheckStatus, kid.name + " checked in for Period " + period + ".", "good"); renderDay();
+        setStatus(els.dayCheckStatus, kid.name + " checked in for Period " + period + ".", "good");
+        renderDay();
+        if (!els.searchModal.classList.contains("hidden")) renderSearchResults();
       }).catch(function (err) { setStatus(els.dayCheckStatus, messageFromError(err, "Could not check in."), "bad"); })
         .finally(function () { setBusy(false); });
     }
@@ -1683,6 +1773,12 @@
         if (sideBtn) { state.checkinSide = sideBtn.dataset.side; renderPeriods(); return; }
         const uncheck = event.target.closest("[data-uncheck]");
         if (uncheck) { removeCheckin(uncheck.dataset.uncheck); return; }
+        const closeSearch = event.target.closest("[data-close-search]");
+        if (closeSearch) { closeCheckinSearch(); return; }
+        const addPeriod = event.target.closest("[data-add-period]");
+        if (addPeriod) { openCheckinSearch(Number(addPeriod.dataset.addPeriod)); return; }
+        const checkinKid = event.target.closest("[data-checkin-kid]");
+        if (checkinKid) { addCheckin(state.searchPeriod, checkinKid.dataset.checkinKid); return; }
         const openKid = event.target.closest("[data-open-kid]");
         if (openKid) { state.selectedKidId = openKid.dataset.openKid; setView("files"); return; }
         const selectKid = event.target.closest("[data-select-kid]");
@@ -1694,9 +1790,9 @@
         const saveProjectBtn = event.target.closest("[data-save-project]");
         if (saveProjectBtn) saveProject(saveProjectBtn.dataset.saveProject);
       });
-      document.addEventListener("change", function (event) {
-        const picker = event.target.closest("[data-checkin-period]");
-        if (picker && picker.value) { addCheckin(Number(picker.dataset.checkinPeriod), picker.value); }
+      els.checkinSearchInput.addEventListener("input", function () { state.searchQuery = els.checkinSearchInput.value; renderSearchResults(); });
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && !els.searchModal.classList.contains("hidden")) closeCheckinSearch();
       });
     }
     cacheEls();
