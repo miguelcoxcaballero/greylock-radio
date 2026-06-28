@@ -422,7 +422,7 @@
             <h2>Kid files, projects &amp; the camp calendar in one place.</h2>
           </div>
           <div class="login-body">
-            <p>Sign in with Google to use one centralized Google Sheet for every kid file, project record, and the nine-week camp schedule.</p>
+            <p>Sign in with Google to use one centralized Google Sheet for every kid file, project record, and the ten-week camp schedule.</p>
             <div><button id="loginBtn" class="btn" type="button">Sign in with Google</button></div>
             <div id="loginStatus" class="status"></div>
           </div>
@@ -619,8 +619,9 @@
     const AUTH_MARKER_KEY = "greylock_radio_signed_in"; // set once the user has signed in; lets us resume silently
     const EXPIRY_REFRESH_MARGIN_MS = 120000; // attempt a silent refresh ~2 min before expiry
     const SWIPE_W = 88; // px revealed by swipe-to-delete
-    const CAMP_WEEKS = 9;
-    const WEEK_START = 0; // 0 = Sunday
+    const CAMP_WEEKS = 10;
+    const WEEK_START = 1; // 1 = Monday
+    const CAMP_START = { y: 2026, m: 5, d: 15 }; // fixed: Monday June 15, 2026 (week 1) → Sunday August 23, 2026
     const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     const MONTHS_FULL = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     const DOW_FULL = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -713,7 +714,7 @@
       const diff = (x.getDay() - WEEK_START + 7) % 7;
       return addDays(x, -diff);
     }
-    function windowStart() { return startOfWeek(new Date()); }
+    function windowStart() { return new Date(CAMP_START.y, CAMP_START.m, CAMP_START.d); }
     function windowEndISO() { return toISO(addDays(windowStart(), CAMP_WEEKS * 7 - 1)); }
     function monthDay(d) { return MONTHS[d.getMonth()] + " " + d.getDate(); }
     function monthDayFull(d) { return MONTHS_FULL[d.getMonth()] + " " + d.getDate() + ", " + d.getFullYear(); }
@@ -1241,7 +1242,7 @@
       const todayIso = toISO(new Date());
       const sel = state.selectedDate || (state.selectedDate = defaultDate());
       const lastDay = addDays(start, CAMP_WEEKS * 7 - 1);
-      els.calWindowLabel.textContent = "Nine weeks · " + monthDayFull(start) + " – " + monthDayFull(lastDay);
+      els.calWindowLabel.textContent = "Ten weeks · " + monthDayFull(start) + " – " + monthDayFull(lastDay);
 
       const counts = {};
       let maxCount = 0;
@@ -1487,7 +1488,7 @@
       const start = windowStart();
       const todayIso = toISO(new Date());
       const lastDay = addDays(start, CAMP_WEEKS * 7 - 1);
-      els.statsWindowLabel.textContent = "Nine weeks · " + monthDayFull(start) + " – " + monthDayFull(lastDay);
+      els.statsWindowLabel.textContent = "Ten weeks · " + monthDayFull(start) + " – " + monthDayFull(lastDay);
 
       const activeToday = state.projects.filter(function (p) { return projectActiveOn(p, todayIso); });
       let projectDays = 0;
@@ -1521,7 +1522,7 @@
         statCard(state.projects.length, "Total projects") +
         statCard(activeToday.length, "Active today") +
         statCard(kidsActiveWindow.size, "Kids active in window") +
-        statCard(projectDays, "Project-days (9 wks)");
+        statCard(projectDays, "Project-days (10 wks)");
 
       els.statsWeeks.innerHTML = weekData.map(function (wd) {
         const pct = maxWeek ? Math.round((wd.days / maxWeek) * 100) : 0;
