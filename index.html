@@ -226,9 +226,92 @@
 
     /* check-in history in the kid file */
     .ci-list { display: grid; gap: 10px; margin-top: 6px; }
-    .ci-day { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .ci-day { border-left: 3px solid var(--good); padding: 8px 0 8px 12px; }
     .ci-date { font-size: 0.82rem; font-weight: 500; margin-bottom: 8px; }
     .ci-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .kid-attendance-wrap { margin-top: 10px; overflow-x: auto; }
+    .kid-attendance {
+      min-width: 620px;
+      display: grid;
+      gap: 8px;
+    }
+    .kid-cal-dows {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(72px, 1fr));
+      gap: 6px;
+      padding-left: 42px;
+      color: var(--text-3);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .kid-cal-row {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr);
+      gap: 6px;
+      align-items: stretch;
+    }
+    .kid-cal-weeks {
+      display: grid;
+      grid-template-rows: repeat(10, minmax(56px, auto));
+      gap: 6px;
+    }
+    .kid-cal-week {
+      display: grid;
+      place-items: center;
+      color: var(--text-3);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+    .kid-cal-board {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(7, minmax(72px, 1fr));
+      grid-template-rows: repeat(10, minmax(56px, auto));
+      gap: 6px;
+    }
+    .kid-cal-lines {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+      overflow: visible;
+    }
+    .kid-cal-line { fill: none; stroke: var(--good); stroke-width: .045; stroke-linecap: round; stroke-linejoin: round; opacity: .42; }
+    .kid-cal-day {
+      position: relative;
+      z-index: 2;
+      min-height: 56px;
+      padding: 6px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.64);
+      display: grid;
+      gap: 4px;
+      align-content: start;
+    }
+    .kid-cal-day.has-attendance { background: #e6f4ea; border-bottom-color: rgba(24,128,56,.35); }
+    .kid-cal-num { font-size: 0.78rem; color: var(--text-2); font-weight: 500; }
+    .kid-cal-num em { font-style: normal; color: var(--text-3); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
+    .kid-cal-badges { display: flex; flex-wrap: wrap; gap: 3px; }
+    .kid-cal-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      border-radius: 999px;
+      background: var(--good);
+      color: #fff;
+      padding: 2px 6px;
+      font-size: 0.66rem;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .kid-cycle-legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .kid-cycle-legend .pill { border-color: rgba(24,128,56,.25); color: var(--good); background: #e6f4ea; }
 
     /* bin */
     .bin-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
@@ -539,6 +622,16 @@
 
             <div class="block-head">
               <div>
+                <h3>Attendance map</h3>
+                <div class="muted" style="font-size:0.82rem;">Green marks are this kid's check-ins. Lines connect matching side/period cycles.</div>
+              </div>
+              <span id="kidAttendanceCount" class="pill">0 days</span>
+            </div>
+            <div id="kidAttendanceMap" class="kid-attendance-wrap"></div>
+            <div id="kidAttendanceLegend" class="kid-cycle-legend"></div>
+
+            <div class="block-head">
+              <div>
                 <h3>Check-in history</h3>
                 <div class="muted" style="font-size:0.82rem;">Recorded from the Calendar tab, per period.</div>
               </div>
@@ -706,7 +799,7 @@
         "appTabs", "tabFiles", "tabCalendar", "tabStats", "tabBin",
         "binView", "binList", "binCount", "binStatus", "emptyBinBtn",
         "kidSearchInput", "newFromSearchBtn", "kidCount", "kidList",
-        "kidCheckins", "kidCheckinCount",
+        "kidCheckins", "kidCheckinCount", "kidAttendanceMap", "kidAttendanceLegend", "kidAttendanceCount",
         "fileTitle", "fileSubtitle", "saveKidBtn", "deleteKidBtn",
         "kidNameInput", "divisionInput", "sideSelect", "fileStatus", "projectCount",
         "projectNameInput", "projectStartInput", "projectEndInput", "addProjectBtn", "projectsList",
@@ -1048,11 +1141,11 @@
       if (view === "calendar") renderCalendar();
       else if (view === "stats") renderStats();
       else if (view === "bin") renderBin();
-      else { renderKids(); renderSelectedKid(); renderProjects(); renderKidCheckins(); }
+      else { renderKids(); renderSelectedKid(); renderProjects(); renderKidAttendanceCalendar(); renderKidCheckins(); }
       if (state.sessionExpired) lockWrites(true);
     }
     function renderAll() {
-      renderKids(); renderSelectedKid(); renderProjects(); renderKidCheckins();
+      renderKids(); renderSelectedKid(); renderProjects(); renderKidAttendanceCalendar(); renderKidCheckins();
       if (state.view === "calendar") renderCalendar();
       else if (state.view === "stats") renderStats();
       else if (state.view === "bin") renderBin();
@@ -1068,7 +1161,7 @@
       els.fileTitle.textContent = "New kid file";
       els.fileSubtitle.textContent = "Fill the fields, save the file, then add projects.";
       setStatus(els.fileStatus, "This file is not saved yet.", "warn");
-      renderProjects(); renderKids();
+      renderProjects(); renderKidAttendanceCalendar(); renderKidCheckins(); renderKids();
     }
     function renderKids() {
       const query = String(els.kidSearchInput.value || "").trim().toLowerCase();
@@ -1480,6 +1573,92 @@
     }
 
     /* ---------- Check-in history in the kid file ---------- */
+    function checkinCycleKey(c) {
+      return String(c.side || "") + "|" + String(c.period || "");
+    }
+    function checkinCycleLabel(key) {
+      const parts = String(key || "").split("|");
+      const side = (parts[0] || "").replace(" side", "");
+      const period = Number(parts[1]) || "";
+      const time = period ? periodTime(parts[0], period) : "";
+      return [side, period ? "P" + period : "", time].filter(Boolean).join(" - ");
+    }
+    function renderKidAttendanceCalendar() {
+      if (!els.kidAttendanceMap) return;
+      const kid = selectedKid();
+      if (!kid) {
+        els.kidAttendanceCount.textContent = "";
+        els.kidAttendanceMap.innerHTML = '<div class="empty">Select a saved kid file to see their attendance map.</div>';
+        els.kidAttendanceLegend.innerHTML = "";
+        return;
+      }
+      const start = windowStart();
+      const list = state.checkins.filter(function (c) { return c.kidId === kid.id; });
+      const byDate = {};
+      const cycleDates = {};
+      list.forEach(function (c) {
+        const d = (c.date || "").slice(0, 10);
+        const parsed = parseISO(d);
+        if (!parsed) return;
+        const offset = Math.round((parsed - start) / 86400000);
+        if (offset < 0 || offset >= CAMP_WEEKS * 7) return;
+        (byDate[d] = byDate[d] || []).push(c);
+        const key = checkinCycleKey(c);
+        (cycleDates[key] = cycleDates[key] || {})[d] = c;
+      });
+      const attendedDays = Object.keys(byDate);
+      els.kidAttendanceCount.textContent = attendedDays.length + (attendedDays.length === 1 ? " day" : " days");
+      if (!attendedDays.length) {
+        els.kidAttendanceMap.innerHTML = '<div class="empty">No attendance yet. Check this kid in from the Calendar tab.</div>';
+        els.kidAttendanceLegend.innerHTML = "";
+        return;
+      }
+
+      let dows = "";
+      for (let d = 0; d < 7; d++) dows += '<div>' + DOW_SHORT[(WEEK_START + d) % 7] + '</div>';
+      let weeks = "";
+      for (let w = 0; w < CAMP_WEEKS; w++) weeks += '<div class="kid-cal-week">W' + (w + 1) + '</div>';
+
+      const paths = [];
+      const legend = [];
+      Object.keys(cycleDates).forEach(function (key) {
+        const dates = Object.keys(cycleDates[key]).sort();
+        if (dates.length < 2) return;
+        const points = dates.map(function (iso) {
+          const offset = Math.round((parseISO(iso) - start) / 86400000);
+          return { x: (offset % 7) + 0.5, y: Math.floor(offset / 7) + 0.5 };
+        });
+        paths.push('<polyline class="kid-cal-line" points="' + points.map(function (p) { return p.x + "," + p.y; }).join(" ") + '"></polyline>');
+        legend.push('<span class="pill">' + escapeHtml(checkinCycleLabel(key)) + ' x' + dates.length + '</span>');
+      });
+
+      let days = "";
+      for (let i = 0; i < CAMP_WEEKS * 7; i++) {
+        const date = addDays(start, i);
+        const iso = toISO(date);
+        const hits = (byDate[iso] || []).slice().sort(function (a, b) {
+          return String(a.side || "").localeCompare(String(b.side || "")) || Number(a.period || 0) - Number(b.period || 0);
+        });
+        const firstOfMonth = date.getDate() === 1;
+        const badgeHtml = hits.map(function (c) {
+          return '<span class="kid-cal-badge" title="' + escapeHtml(checkinCycleLabel(checkinCycleKey(c))) + '">' +
+            escapeHtml((c.side || "").slice(0, 1)) + ' P' + escapeHtml(c.period || "") + '</span>';
+        }).join("");
+        days += '<div class="kid-cal-day' + (hits.length ? ' has-attendance' : '') + '">' +
+          '<span class="kid-cal-num">' + date.getDate() + (firstOfMonth ? ' <em>' + MONTHS[date.getMonth()] + '</em>' : '') + '</span>' +
+          (badgeHtml ? '<div class="kid-cal-badges">' + badgeHtml + '</div>' : '') +
+          '</div>';
+      }
+
+      els.kidAttendanceMap.innerHTML =
+        '<div class="kid-attendance">' +
+        '<div class="kid-cal-dows">' + dows + '</div>' +
+        '<div class="kid-cal-row"><div class="kid-cal-weeks">' + weeks + '</div><div class="kid-cal-board">' +
+        '<svg class="kid-cal-lines" viewBox="0 0 7 10" preserveAspectRatio="none" aria-hidden="true">' + paths.join("") + '</svg>' +
+        days +
+        '</div></div></div>';
+      els.kidAttendanceLegend.innerHTML = legend.length ? legend.join("") : '<span class="muted" style="font-size:0.82rem;">No repeated side/period cycle yet.</span>';
+    }
     function renderKidCheckins() {
       if (!els.kidCheckins) return;
       const kid = selectedKid();
