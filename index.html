@@ -214,6 +214,32 @@
     .project-edit-grid { display: grid; grid-template-columns: minmax(160px, 1fr) 150px 150px; gap: 12px; min-width: 0; }
     .project-actions { display: flex; gap: 6px; align-items: end; flex-wrap: wrap; justify-content: flex-end; }
 
+    /* swipe-to-delete */
+    .swipe { position: relative; overflow: hidden; border-radius: 12px; }
+    .swipe-action { position: absolute; top: 0; bottom: 0; right: 0; width: 88px; background: var(--bad); display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+    .swipe-del { border: 0; background: transparent; color: #fff; font-weight: 600; width: 100%; height: 100%; font-size: 0.86rem; }
+    .swipe-content { position: relative; transform: translateX(0); transition: transform .18s ease; touch-action: pan-y; }
+    .swipe.dragging .swipe-content { transition: none; }
+    .swipe.open .swipe-content { transform: translateX(-88px); }
+    .kid-card.swipe-content { background: var(--surface); }
+    .kid-card.swipe-content.active { background: var(--red-container); }
+
+    /* check-in history in the kid file */
+    .ci-list { display: grid; gap: 10px; margin-top: 6px; }
+    .ci-day { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+    .ci-date { font-size: 0.82rem; font-weight: 500; margin-bottom: 8px; }
+    .ci-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+    /* bin */
+    .bin-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .bin-row:last-child { border-bottom: 0; }
+    .bin-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .bin-info strong { font-weight: 500; }
+    .bin-sub { color: var(--text-2); font-size: 0.82rem; }
+    .bin-when { color: var(--text-3); font-size: 0.76rem; }
+    .bin-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .bin-actions .btn { height: 36px; padding: 0 16px; }
+
     /* ---------- Calendar view ---------- */
     .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
     .cal-head h2 { font-size: 1.4rem; }
@@ -367,6 +393,10 @@
           <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
           Statistics
         </button>
+        <button id="tabBin" class="tab" type="button" data-view="bin">
+          <svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          Bin
+        </button>
       </nav>
       <div id="expiredBanner" class="expired-banner hidden" role="alert">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
@@ -481,6 +511,15 @@
             </div>
 
             <div id="projectsList" class="projects"></div>
+
+            <div class="block-head">
+              <div>
+                <h3>Check-in history</h3>
+                <div class="muted" style="font-size:0.82rem;">Recorded from the Calendar tab, per period.</div>
+              </div>
+              <span id="kidCheckinCount" class="pill">0 check-ins</span>
+            </div>
+            <div id="kidCheckins" class="ci-list"></div>
           </section>
         </div>
       </section>
@@ -534,6 +573,19 @@
           </div>
         </div>
       </section>
+
+      <!-- BIN -->
+      <section id="binView" class="view hidden">
+        <div class="cal-head">
+          <div>
+            <h2>Bin</h2>
+            <div class="sub">Deleted items stay here until you remove them permanently. <span id="binCount" class="muted"></span></div>
+          </div>
+          <button id="emptyBinBtn" class="btn danger" type="button">Empty bin</button>
+        </div>
+        <div id="binStatus" class="status"></div>
+        <div class="card card-pad"><div id="binList"></div></div>
+      </section>
     </main>
   </div>
 
@@ -546,8 +598,8 @@
     const WORKBOOK_NAME = "Greylock Radio Kid Files";
     const SHEETS = Object.freeze({ kids: "Kids", projects: "Projects", checkins: "Checkins" });
     const HEADERS = Object.freeze({
-      kids: ["Kid ID", "Name", "Division", "Side", "Created At", "Updated At"],
-      projects: ["Project ID", "Kid ID", "Kid Name", "Project", "Start Date", "End Date", "Notes", "Updated At"],
+      kids: ["Kid ID", "Name", "Division", "Side", "Created At", "Updated At", "Deleted At"],
+      projects: ["Project ID", "Kid ID", "Kid Name", "Project", "Start Date", "End Date", "Notes", "Updated At", "Deleted At"],
       checkins: ["Check ID", "Date", "Side", "Period", "Kid ID", "Kid Name", "Checked In At"]
     });
     // Period schedules. Junior side = shorter periods (7); Senior side = longer periods (5).
@@ -565,6 +617,7 @@
     const TOKEN_FRESH_MS = 60000;
     const TOKEN_STORAGE_KEY = "greylock_radio_oauth";
     const EXPIRY_REFRESH_MARGIN_MS = 120000; // attempt a silent refresh ~2 min before expiry
+    const SWIPE_W = 88; // px revealed by swipe-to-delete
     const CAMP_WEEKS = 9;
     const WEEK_START = 0; // 0 = Sunday
     const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
@@ -583,6 +636,8 @@
       kids: [],
       projects: [],
       checkins: [],
+      binnedKids: [],
+      binnedProjects: [],
       selectedKidId: "",
       view: "files",
       selectedDate: "",
@@ -597,8 +652,10 @@
         "loginView", "filesView", "calendarView", "statsView",
         "loginBtn", "loginStatus", "userChip", "userPhoto", "userName",
         "openSheetBtn", "refreshBtn", "logoutBtn", "expiredBanner", "reauthBtn", "bannerStatus",
-        "appTabs", "tabFiles", "tabCalendar", "tabStats",
+        "appTabs", "tabFiles", "tabCalendar", "tabStats", "tabBin",
+        "binView", "binList", "binCount", "binStatus", "emptyBinBtn",
         "kidSearchInput", "newFromSearchBtn", "kidCount", "kidList",
+        "kidCheckins", "kidCheckinCount",
         "fileTitle", "fileSubtitle", "saveKidBtn", "deleteKidBtn",
         "kidNameInput", "divisionInput", "sideSelect", "fileStatus", "projectCount",
         "projectNameInput", "projectStartInput", "projectEndInput", "addProjectBtn", "projectsList",
@@ -751,7 +808,8 @@
       ["kidNameInput", "divisionInput", "sideSelect", "projectNameInput", "projectStartInput", "projectEndInput", "saveKidBtn", "deleteKidBtn", "addProjectBtn"].forEach(function (id) {
         if (els[id]) els[id].disabled = locked;
       });
-      document.querySelectorAll("[data-save-project],[data-delete-project],[data-checkin-period],[data-uncheck]").forEach(function (b) { b.disabled = locked; });
+      if (els.emptyBinBtn) els.emptyBinBtn.disabled = locked;
+      document.querySelectorAll("[data-save-project],[data-delete-project],[data-checkin-period],[data-uncheck],[data-bin-kid],[data-restore-kid],[data-destroy-kid],[data-restore-project],[data-destroy-project]").forEach(function (b) { b.disabled = locked; });
     }
     function enterExpired() {
       if (state.expiryTimer) { clearTimeout(state.expiryTimer); state.expiryTimer = null; }
@@ -840,8 +898,8 @@
         });
       }).then(function () { return readAllSheets(); }).then(function () {
         const updates = [];
-        if (!state.kids._hasHeader) updates.push({ range: quoteSheetName(SHEETS.kids) + "!A1:F1", values: [HEADERS.kids] });
-        if (!state.projects._hasHeader) updates.push({ range: quoteSheetName(SHEETS.projects) + "!A1:H1", values: [HEADERS.projects] });
+        if (!state.kids._hasHeader) updates.push({ range: quoteSheetName(SHEETS.kids) + "!A1:G1", values: [HEADERS.kids] });
+        if (!state.projects._hasHeader) updates.push({ range: quoteSheetName(SHEETS.projects) + "!A1:I1", values: [HEADERS.projects] });
         if (!state.checkins._hasHeader) updates.push({ range: quoteSheetName(SHEETS.checkins) + "!A1:G1", values: [HEADERS.checkins] });
         if (!updates.length) return true;
         return fetchJson("https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) + "/values:batchUpdate", {
@@ -852,6 +910,7 @@
     }
     function hasKnownHeader(row, headers) { return headers.every(function (h, i) { return String(row[i] || "").trim() === h; }); }
     function hasLegacyKidHeader(row) { return String(row[0] || "").trim() === "Kid ID" && String(row[1] || "").trim() === "Name"; }
+    function hasLegacyProjectHeader(row) { return String(row[0] || "").trim() === "Project ID" && String(row[3] || "").trim() === "Project"; }
     function normalizeRows(values, headers, legacyHeaderCheck) {
       const rows = Array.isArray(values) ? values : [];
       const first = rows[0] || [];
@@ -860,15 +919,19 @@
     }
     function readAllSheets() {
       if (!state.spreadsheetId) return Promise.resolve();
-      const ranges = [quoteSheetName(SHEETS.kids) + "!A:F", quoteSheetName(SHEETS.projects) + "!A:H", quoteSheetName(SHEETS.checkins) + "!A:G"];
+      const ranges = [quoteSheetName(SHEETS.kids) + "!A:G", quoteSheetName(SHEETS.projects) + "!A:I", quoteSheetName(SHEETS.checkins) + "!A:G"];
       return fetchJson("https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) +
         "/values:batchGet?ranges=" + ranges.map(encodeURIComponent).join("&ranges=")).then(function (data) {
         const vr = data.valueRanges || [];
         const kids = normalizeRows((vr[0] && vr[0].values) || [], HEADERS.kids, hasLegacyKidHeader);
-        const projects = normalizeRows((vr[1] && vr[1].values) || [], HEADERS.projects);
+        const projects = normalizeRows((vr[1] && vr[1].values) || [], HEADERS.projects, hasLegacyProjectHeader);
         const checkins = normalizeRows((vr[2] && vr[2].values) || [], HEADERS.checkins);
-        state.kids = kids.rows.filter(function (r) { return r[0] || r[1]; }).map(rowToKid).sort(sortKids);
-        state.projects = projects.rows.filter(function (r) { return r[0] || r[1] || r[3]; }).map(rowToProject);
+        const allKids = kids.rows.filter(function (r) { return r[0] || r[1]; }).map(rowToKid);
+        const allProjects = projects.rows.filter(function (r) { return r[0] || r[1] || r[3]; }).map(rowToProject);
+        state.kids = allKids.filter(function (k) { return !k.deletedAt; }).sort(sortKids);
+        state.binnedKids = allKids.filter(function (k) { return k.deletedAt; });
+        state.projects = allProjects.filter(function (p) { return !p.deletedAt; });
+        state.binnedProjects = allProjects.filter(function (p) { return p.deletedAt; });
         state.checkins = checkins.rows.filter(function (r) { return (r[0] || r[4]) && r[1]; }).map(rowToCheckin);
         state.kids._hasHeader = hasKnownHeader(((vr[0] && vr[0].values) || [])[0] || [], HEADERS.kids);
         state.projects._hasHeader = hasKnownHeader(((vr[1] && vr[1].values) || [])[0] || [], HEADERS.projects);
@@ -876,13 +939,13 @@
       });
     }
     function rowToKid(r) {
-      return { id: r[0] || makeId("kid", r[1]), name: r[1] || "", division: r[2] || "", side: r[3] || "", createdAt: r[4] || r[5] || "", updatedAt: r[5] || "" };
+      return { id: r[0] || makeId("kid", r[1]), name: r[1] || "", division: r[2] || "", side: r[3] || "", createdAt: r[4] || r[5] || "", updatedAt: r[5] || "", deletedAt: r[6] || "" };
     }
     function rowToProject(r) {
-      return { id: r[0] || makeId("project", r[3]), kidId: r[1] || "", kidName: r[2] || "", name: r[3] || "", startDate: r[4] || "", endDate: r[5] || "", notes: r[6] || "", updatedAt: r[7] || "" };
+      return { id: r[0] || makeId("project", r[3]), kidId: r[1] || "", kidName: r[2] || "", name: r[3] || "", startDate: r[4] || "", endDate: r[5] || "", notes: r[6] || "", updatedAt: r[7] || "", deletedAt: r[8] || "" };
     }
-    function kidToRow(kid) { return [kid.id, kid.name, kid.division, kid.side, kid.createdAt, kid.updatedAt]; }
-    function projectToRow(p) { return [p.id, p.kidId, p.kidName, p.name, p.startDate, p.endDate, p.notes, p.updatedAt]; }
+    function kidToRow(kid) { return [kid.id, kid.name, kid.division, kid.side, kid.createdAt, kid.updatedAt, kid.deletedAt || ""]; }
+    function projectToRow(p) { return [p.id, p.kidId, p.kidName, p.name, p.startDate, p.endDate, p.notes, p.updatedAt, p.deletedAt || ""]; }
     function rowToCheckin(r) {
       return { id: r[0] || makeId("chk", r[5]), date: (r[1] || "").slice(0, 10), side: r[2] || "", period: Number(r[3]) || 0, kidId: r[4] || "", kidName: r[5] || "", updatedAt: r[6] || "" };
     }
@@ -896,6 +959,9 @@
         });
       });
     }
+    function persistKids() { return rewriteSheet(SHEETS.kids, HEADERS.kids, state.kids.concat(state.binnedKids).map(kidToRow), "G"); }
+    function persistProjects() { return rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.concat(state.binnedProjects).map(projectToRow), "I"); }
+    function persistCheckins() { return rewriteSheet(SHEETS.checkins, HEADERS.checkins, state.checkins.map(checkinToRow), "G"); }
     function selectedKid() { return state.kids.find(function (kid) { return kid.id === state.selectedKidId; }) || null; }
     function projectsForKid(kidId) {
       return state.projects.filter(function (p) { return p.kidId === kidId; })
@@ -908,18 +974,22 @@
       els.filesView.classList.toggle("hidden", view !== "files");
       els.calendarView.classList.toggle("hidden", view !== "calendar");
       els.statsView.classList.toggle("hidden", view !== "stats");
+      els.binView.classList.toggle("hidden", view !== "bin");
       els.tabFiles.classList.toggle("active", view === "files");
       els.tabCalendar.classList.toggle("active", view === "calendar");
       els.tabStats.classList.toggle("active", view === "stats");
+      els.tabBin.classList.toggle("active", view === "bin");
       if (view === "calendar") renderCalendar();
       else if (view === "stats") renderStats();
-      else { renderKids(); renderSelectedKid(); renderProjects(); }
+      else if (view === "bin") renderBin();
+      else { renderKids(); renderSelectedKid(); renderProjects(); renderKidCheckins(); }
       if (state.sessionExpired) lockWrites(true);
     }
     function renderAll() {
-      renderKids(); renderSelectedKid(); renderProjects();
+      renderKids(); renderSelectedKid(); renderProjects(); renderKidCheckins();
       if (state.view === "calendar") renderCalendar();
       else if (state.view === "stats") renderStats();
+      else if (state.view === "bin") renderBin();
       if (state.sessionExpired) lockWrites(true);
     }
 
@@ -949,13 +1019,15 @@
       }
       els.kidList.innerHTML = kids.map(function (kid) {
         const count = projectsForKid(kid.id).length;
-        return '<button class="kid-card ' + (kid.id === state.selectedKidId ? "active" : "") + '" type="button" data-select-kid="' + escapeHtml(kid.id) + '">' +
+        return '<div class="swipe">' +
+          '<div class="swipe-action"><button class="swipe-del" type="button" data-bin-kid="' + escapeHtml(kid.id) + '">Delete</button></div>' +
+          '<button class="kid-card swipe-content ' + (kid.id === state.selectedKidId ? "active" : "") + '" type="button" data-select-kid="' + escapeHtml(kid.id) + '">' +
           '<strong>' + escapeHtml(kid.name || "Unnamed") + '</strong>' +
           '<div class="kid-meta">' +
           (kid.division ? '<span class="pill">' + escapeHtml(kid.division) + '</span>' : '') +
           (kid.side ? '<span class="pill">' + escapeHtml(kid.side) + '</span>' : '') +
           '<span>' + count + (count === 1 ? ' project' : ' projects') + '</span>' +
-          '</div></button>';
+          '</div></button></div>';
       }).join("");
     }
     function renderSelectedKid() {
@@ -1009,29 +1081,64 @@
         state.kids.push(kid); state.kids.sort(sortKids); state.selectedKidId = kid.id;
       }
       setBusy(true);
-      Promise.all([
-        rewriteSheet(SHEETS.kids, HEADERS.kids, state.kids.map(kidToRow), "F"),
-        rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H"),
-        rewriteSheet(SHEETS.checkins, HEADERS.checkins, state.checkins.map(checkinToRow), "G")
-      ]).then(function () { setStatus(els.fileStatus, "Kid file saved.", "good"); renderAll(); })
+      Promise.all([persistKids(), persistProjects(), persistCheckins()])
+        .then(function () { setStatus(els.fileStatus, "Kid file saved.", "good"); renderAll(); })
         .catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not save kid file."), "bad"); })
+        .finally(function () { setBusy(false); });
+    }
+    function binKid(kidId) {
+      const kid = state.kids.find(function (k) { return k.id === kidId; });
+      if (!kid) return;
+      const ts = new Date().toISOString();
+      kid.deletedAt = ts;
+      state.kids = state.kids.filter(function (k) { return k.id !== kid.id; });
+      state.binnedKids.push(kid);
+      // cascade: bin this kid's live projects, tagged with the same timestamp so Restore brings them back together
+      const cascaded = state.projects.filter(function (p) { return p.kidId === kid.id; });
+      cascaded.forEach(function (p) { p.deletedAt = ts; });
+      state.projects = state.projects.filter(function (p) { return p.kidId !== kid.id; });
+      state.binnedProjects = state.binnedProjects.concat(cascaded);
+      if (state.selectedKidId === kid.id) { state.selectedKidId = ""; newDraft(""); }
+      setBusy(true);
+      Promise.all([persistKids(), persistProjects()])
+        .then(function () { setStatus(els.fileStatus, "Moved " + (kid.name || "kid file") + " to the Bin.", "good"); renderAll(); })
+        .catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not delete kid file."), "bad"); })
         .finally(function () { setBusy(false); });
     }
     function deleteKidFile() {
       const kid = selectedKid();
       if (!kid) { newDraft(""); return; }
-      if (!confirm("Delete the file for " + kid.name + " and all of this kid's projects?")) return;
-      state.kids = state.kids.filter(function (item) { return item.id !== kid.id; });
-      state.projects = state.projects.filter(function (p) { return p.kidId !== kid.id; });
-      state.checkins = state.checkins.filter(function (c) { return c.kidId !== kid.id; });
-      state.selectedKidId = "";
+      binKid(kid.id);
+    }
+    function restoreKid(kidId) {
+      const kid = state.binnedKids.find(function (k) { return k.id === kidId; });
+      if (!kid) return;
+      const ts = kid.deletedAt;
+      kid.deletedAt = "";
+      state.binnedKids = state.binnedKids.filter(function (k) { return k.id !== kid.id; });
+      state.kids.push(kid); state.kids.sort(sortKids);
+      const back = state.binnedProjects.filter(function (p) { return p.kidId === kid.id && p.deletedAt === ts; });
+      const backIds = {}; back.forEach(function (p) { backIds[p.id] = true; });
+      state.binnedProjects = state.binnedProjects.filter(function (p) { return !backIds[p.id]; });
+      back.forEach(function (p) { p.deletedAt = ""; });
+      state.projects = state.projects.concat(back);
       setBusy(true);
-      Promise.all([
-        rewriteSheet(SHEETS.kids, HEADERS.kids, state.kids.map(kidToRow), "F"),
-        rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H"),
-        rewriteSheet(SHEETS.checkins, HEADERS.checkins, state.checkins.map(checkinToRow), "G")
-      ]).then(function () { newDraft(""); setStatus(els.fileStatus, "Kid file deleted.", "good"); })
-        .catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not delete kid file."), "bad"); })
+      Promise.all([persistKids(), persistProjects()])
+        .then(function () { renderAll(); })
+        .catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not restore."), "bad"); })
+        .finally(function () { setBusy(false); });
+    }
+    function destroyKid(kidId) {
+      const kid = state.binnedKids.find(function (k) { return k.id === kidId; });
+      if (!kid) return;
+      if (!confirm("Permanently delete " + (kid.name || "this kid file") + " and all of their projects and check-ins? This cannot be undone.")) return;
+      state.binnedKids = state.binnedKids.filter(function (k) { return k.id !== kid.id; });
+      state.binnedProjects = state.binnedProjects.filter(function (p) { return p.kidId !== kid.id; });
+      state.checkins = state.checkins.filter(function (c) { return c.kidId !== kid.id; });
+      setBusy(true);
+      Promise.all([persistKids(), persistProjects(), persistCheckins()])
+        .then(function () { renderBin(); })
+        .catch(function (err) { setStatus(els.binStatus, messageFromError(err, "Could not delete permanently."), "bad"); })
         .finally(function () { setBusy(false); });
     }
     function addProject() {
@@ -1043,9 +1150,10 @@
         id: makeId("project", name), kidId: kid.id, kidName: kid.name, name: name,
         startDate: els.projectStartInput.value, endDate: els.projectEndInput.value, notes: "", updatedAt: new Date().toISOString()
       };
+      project.deletedAt = "";
       state.projects.push(project);
       setBusy(true);
-      rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H").then(function () {
+      persistProjects().then(function () {
         els.projectNameInput.value = ""; els.projectStartInput.value = ""; els.projectEndInput.value = "";
         setStatus(els.fileStatus, "Project added.", "good"); renderAll();
       }).catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not add project."), "bad"); })
@@ -1053,12 +1161,48 @@
     }
     function deleteProject(projectId) {
       const project = state.projects.find(function (item) { return item.id === projectId; });
-      if (!project || !confirm("Remove project \"" + project.name + "\"?")) return;
+      if (!project) return;
+      project.deletedAt = new Date().toISOString();
       state.projects = state.projects.filter(function (item) { return item.id !== projectId; });
+      state.binnedProjects.push(project);
       setBusy(true);
-      rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H").then(function () {
-        setStatus(els.fileStatus, "Project removed.", "good"); renderAll();
+      persistProjects().then(function () {
+        setStatus(els.fileStatus, "Moved \"" + (project.name || "project") + "\" to the Bin.", "good"); renderAll();
       }).catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not remove project."), "bad"); })
+        .finally(function () { setBusy(false); });
+    }
+    function restoreProject(projectId) {
+      const project = state.binnedProjects.find(function (item) { return item.id === projectId; });
+      if (!project) return;
+      project.deletedAt = "";
+      state.binnedProjects = state.binnedProjects.filter(function (item) { return item.id !== projectId; });
+      state.projects.push(project);
+      setBusy(true);
+      persistProjects().then(function () { renderAll(); })
+        .catch(function (err) { setStatus(els.binStatus, messageFromError(err, "Could not restore."), "bad"); })
+        .finally(function () { setBusy(false); });
+    }
+    function destroyProject(projectId) {
+      const project = state.binnedProjects.find(function (item) { return item.id === projectId; });
+      if (!project) return;
+      if (!confirm("Permanently delete \"" + (project.name || "this project") + "\"? This cannot be undone.")) return;
+      state.binnedProjects = state.binnedProjects.filter(function (item) { return item.id !== projectId; });
+      setBusy(true);
+      persistProjects().then(function () { renderBin(); })
+        .catch(function (err) { setStatus(els.binStatus, messageFromError(err, "Could not delete permanently."), "bad"); })
+        .finally(function () { setBusy(false); });
+    }
+    function emptyBin() {
+      if (!state.binnedKids.length && !state.binnedProjects.length) return;
+      if (!confirm("Permanently delete everything in the Bin? This cannot be undone.")) return;
+      const goneKidIds = state.binnedKids.map(function (k) { return k.id; });
+      state.binnedKids = [];
+      state.binnedProjects = [];
+      state.checkins = state.checkins.filter(function (c) { return goneKidIds.indexOf(c.kidId) === -1; });
+      setBusy(true);
+      Promise.all([persistKids(), persistProjects(), persistCheckins()])
+        .then(function () { renderBin(); })
+        .catch(function (err) { setStatus(els.binStatus, messageFromError(err, "Could not empty the Bin."), "bad"); })
         .finally(function () { setBusy(false); });
     }
     function saveProject(projectId) {
@@ -1070,7 +1214,7 @@
       if (!next.name) { setStatus(els.fileStatus, "Project name is required.", "warn"); return; }
       project.name = next.name; project.startDate = next.startDate || ""; project.endDate = next.endDate || ""; project.updatedAt = new Date().toISOString();
       setBusy(true);
-      rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.map(projectToRow), "H").then(function () {
+      persistProjects().then(function () {
         setStatus(els.fileStatus, "Project saved.", "good"); renderAll();
       }).catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not save project."), "bad"); })
         .finally(function () { setBusy(false); });
@@ -1132,7 +1276,7 @@
       const kidIds = Object.keys(byKid);
       const starting = active.filter(function (p) { return (p.startDate || "").slice(0, 10) === iso; }).length;
       const ending = active.filter(function (p) { return (p.endDate || "").slice(0, 10) === iso; }).length;
-      const dayCheckins = state.checkins.filter(function (c) { return c.date === iso; }).length;
+      const dayCheckins = liveCheckins().filter(function (c) { return c.date === iso; }).length;
 
       els.dayTitle.textContent = DOW_FULL[date.getDay()] + ", " + monthDayFull(date);
       const wIdx = weekIndexOfISO(iso);
@@ -1164,11 +1308,21 @@
       }).join("");
     }
 
+    function liveCheckins() {
+      const live = {}; state.kids.forEach(function (k) { live[k.id] = true; });
+      return state.checkins.filter(function (c) { return live[c.kidId]; });
+    }
+    function periodTime(side, n) {
+      const list = PERIODS[side] || [];
+      for (var i = 0; i < list.length; i++) { if (list[i].n === n) return list[i].time; }
+      return "";
+    }
     function renderPeriods() {
       const iso = state.selectedDate;
       const side = state.checkinSide;
+      const shown = liveCheckins();
       els.periodSide.innerHTML = SIDES.map(function (s) {
-        const total = state.checkins.filter(function (c) { return c.date === iso && c.side === s; }).length;
+        const total = shown.filter(function (c) { return c.date === iso && c.side === s; }).length;
         return '<button type="button" class="seg-btn ' + (s === side ? "active" : "") + '" data-side="' + escapeHtml(s) + '">' +
           escapeHtml(s.replace(" side", "")) + ' <small>' + PERIODS[s].length + ' periods · ' + total + '</small></button>';
       }).join("");
@@ -1176,7 +1330,7 @@
       // kids eligible for this side: matching side, plus kids with no side set
       const eligible = state.kids.filter(function (k) { return !k.side || k.side === side; }).sort(sortKids);
       els.dayPeriods.innerHTML = PERIODS[side].map(function (p) {
-        const here = state.checkins.filter(function (c) { return c.date === iso && c.side === side && c.period === p.n; });
+        const here = shown.filter(function (c) { return c.date === iso && c.side === side && c.period === p.n; });
         const hereIds = here.map(function (c) { return c.kidId; });
         const chips = here.length ? here.map(function (c) {
           return '<span class="chk-chip">' + escapeHtml(c.kidName || "Unknown") +
@@ -1200,7 +1354,7 @@
       if (state.checkins.some(function (c) { return c.date === iso && c.side === side && c.period === period && c.kidId === kidId; })) return;
       state.checkins.push({ id: makeId("chk", kid.name), date: iso, side: side, period: period, kidId: kidId, kidName: kid.name, updatedAt: new Date().toISOString() });
       setBusy(true);
-      rewriteSheet(SHEETS.checkins, HEADERS.checkins, state.checkins.map(checkinToRow), "G").then(function () {
+      persistCheckins().then(function () {
         setStatus(els.dayCheckStatus, kid.name + " checked in for Period " + period + ".", "good"); renderDay();
       }).catch(function (err) { setStatus(els.dayCheckStatus, messageFromError(err, "Could not check in."), "bad"); })
         .finally(function () { setBusy(false); });
@@ -1210,10 +1364,107 @@
       if (!c) return;
       state.checkins = state.checkins.filter(function (item) { return item.id !== checkinId; });
       setBusy(true);
-      rewriteSheet(SHEETS.checkins, HEADERS.checkins, state.checkins.map(checkinToRow), "G").then(function () {
+      persistCheckins().then(function () {
         setStatus(els.dayCheckStatus, "Removed " + (c.kidName || "kid") + " from Period " + c.period + ".", "good"); renderDay();
       }).catch(function (err) { setStatus(els.dayCheckStatus, messageFromError(err, "Could not remove check-in."), "bad"); })
         .finally(function () { setBusy(false); });
+    }
+
+    /* ---------- Check-in history in the kid file ---------- */
+    function renderKidCheckins() {
+      if (!els.kidCheckins) return;
+      const kid = selectedKid();
+      if (!kid) { els.kidCheckins.innerHTML = '<div class="empty">Select a saved kid file to see check-ins.</div>'; els.kidCheckinCount.textContent = ""; return; }
+      const list = state.checkins.filter(function (c) { return c.kidId === kid.id; });
+      els.kidCheckinCount.textContent = list.length + (list.length === 1 ? " check-in" : " check-ins");
+      if (!list.length) { els.kidCheckins.innerHTML = '<div class="empty">No check-ins yet. Check this kid in from the Calendar tab.</div>'; return; }
+      const byDate = {};
+      list.forEach(function (c) { (byDate[c.date] = byDate[c.date] || []).push(c); });
+      const dates = Object.keys(byDate).sort(function (a, b) { return b.localeCompare(a); });
+      els.kidCheckins.innerHTML = dates.map(function (d) {
+        const dt = parseISO(d);
+        const head = dt ? (DOW_FULL[dt.getDay()] + ", " + monthDay(dt)) : escapeHtml(d);
+        const chips = byDate[d].sort(function (a, b) { return a.period - b.period; }).map(function (c) {
+          const t = periodTime(c.side, c.period);
+          return '<span class="pill red">' + escapeHtml((c.side || "").replace(" side", "")) + " · P" + c.period + (t ? " · " + escapeHtml(t) : "") + '</span>';
+        }).join("");
+        return '<div class="ci-day"><div class="ci-date">' + head + '</div><div class="ci-chips">' + chips + '</div></div>';
+      }).join("");
+    }
+
+    /* ---------- Bin (recoverable deletes) ---------- */
+    function deletedWhen(iso) { const d = parseISO(iso); return d ? monthDayFull(d) : ""; }
+    function binRow(type, id, title, sub, deletedAt) {
+      const when = deletedWhen(deletedAt);
+      return '<div class="bin-row"><div class="bin-info"><strong>' + escapeHtml(title) + '</strong>' +
+        (sub ? '<span class="bin-sub">' + escapeHtml(sub) + '</span>' : '') +
+        (when ? '<span class="bin-when">Deleted ' + escapeHtml(when) + '</span>' : '') + '</div>' +
+        '<div class="bin-actions">' +
+        '<button class="btn tonal" type="button" data-restore-' + type + '="' + escapeHtml(id) + '">Restore</button>' +
+        '<button class="btn danger" type="button" data-destroy-' + type + '="' + escapeHtml(id) + '">Delete</button>' +
+        '</div></div>';
+    }
+    function renderBin() {
+      const kids = state.binnedKids.slice().sort(function (a, b) { return (b.deletedAt || "").localeCompare(a.deletedAt || ""); });
+      const binnedKidIds = {}; state.binnedKids.forEach(function (k) { binnedKidIds[k.id] = true; });
+      const projects = state.binnedProjects.filter(function (p) { return !binnedKidIds[p.kidId]; })
+        .sort(function (a, b) { return (b.deletedAt || "").localeCompare(a.deletedAt || ""); });
+      const total = kids.length + projects.length;
+      els.binCount.textContent = total ? "· " + total + (total === 1 ? " item" : " items") : "";
+      els.emptyBinBtn.disabled = !total;
+      if (!total) { els.binList.innerHTML = '<div class="empty">The Bin is empty.</div>'; return; }
+      let html = "";
+      if (kids.length) {
+        html += '<div class="section-label">Kid files</div>' + kids.map(function (k) {
+          return binRow("kid", k.id, k.name || "Unnamed", [k.division, k.side].filter(Boolean).join(" · "), k.deletedAt);
+        }).join("");
+      }
+      if (projects.length) {
+        html += '<div class="section-label" style="margin-top:14px;">Projects</div>' + projects.map(function (p) {
+          return binRow("project", p.id, p.name || "Untitled", p.kidName || "", p.deletedAt);
+        }).join("");
+      }
+      els.binList.innerHTML = html;
+      if (state.sessionExpired) lockWrites(true);
+    }
+
+    /* ---------- Swipe-to-delete (iOS-style) ---------- */
+    var swipe = { content: null, wrap: null, startX: 0, startY: 0, dragging: false, base: 0, dx: 0 };
+    var swipeSuppressClick = false;
+    var openSwipe = null;
+    function closeOpenSwipe(except) { if (openSwipe && openSwipe !== except) { openSwipe.classList.remove("open"); openSwipe = null; } }
+    function onSwipeDown(e) {
+      if (e.target.closest(".swipe-action")) return; // the Delete button handles its own click
+      const content = e.target.closest(".swipe-content");
+      if (!content) { closeOpenSwipe(); return; }
+      swipe.content = content; swipe.wrap = content.parentElement;
+      swipe.startX = e.clientX; swipe.startY = e.clientY; swipe.dragging = false;
+      swipe.base = swipe.wrap.classList.contains("open") ? -SWIPE_W : 0; swipe.dx = swipe.base;
+    }
+    function onSwipeMove(e) {
+      if (!swipe.content) return;
+      const dx = e.clientX - swipe.startX, dy = e.clientY - swipe.startY;
+      if (!swipe.dragging) {
+        if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy)) { swipe.dragging = true; swipe.wrap.classList.add("dragging"); closeOpenSwipe(swipe.wrap); }
+        else return;
+      }
+      const t = Math.max(-SWIPE_W, Math.min(0, swipe.base + dx));
+      swipe.dx = t; swipe.content.style.transform = "translateX(" + t + "px)";
+      if (e.cancelable) e.preventDefault();
+    }
+    function onSwipeUp() {
+      if (!swipe.content) return;
+      const wrap = swipe.wrap, content = swipe.content;
+      wrap.classList.remove("dragging"); content.style.transform = "";
+      if (swipe.dragging) {
+        if (swipe.dx < -SWIPE_W / 2) { wrap.classList.add("open"); openSwipe = wrap; }
+        else { wrap.classList.remove("open"); if (openSwipe === wrap) openSwipe = null; }
+        swipeSuppressClick = true; setTimeout(function () { swipeSuppressClick = false; }, 60);
+      } else if (wrap.classList.contains("open")) {
+        wrap.classList.remove("open"); if (openSwipe === wrap) openSwipe = null;
+        swipeSuppressClick = true; setTimeout(function () { swipeSuppressClick = false; }, 60);
+      }
+      swipe.content = null; swipe.wrap = null; swipe.dragging = false;
     }
 
     /* ---------- Stats view ---------- */
@@ -1351,8 +1602,9 @@
       clearStoredToken();
       clearExpired();
       state.accessToken = ""; state.accessTokenExpiresAt = 0; state.spreadsheetId = "";
-      state.currentUser = null; state.kids = []; state.projects = []; state.selectedKidId = "";
-      els.filesView.classList.add("hidden"); els.calendarView.classList.add("hidden"); els.statsView.classList.add("hidden");
+      state.currentUser = null; state.kids = []; state.projects = []; state.checkins = [];
+      state.binnedKids = []; state.binnedProjects = []; state.selectedKidId = "";
+      els.filesView.classList.add("hidden"); els.calendarView.classList.add("hidden"); els.statsView.classList.add("hidden"); els.binView.classList.add("hidden");
       els.loginView.classList.remove("hidden");
       els.appTabs.classList.add("hidden");
       els.userChip.classList.add("hidden"); els.openSheetBtn.classList.add("hidden");
@@ -1368,6 +1620,12 @@
       els.tabFiles.addEventListener("click", function () { setView("files"); });
       els.tabCalendar.addEventListener("click", function () { setView("calendar"); });
       els.tabStats.addEventListener("click", function () { setView("stats"); });
+      els.tabBin.addEventListener("click", function () { setView("bin"); });
+      els.emptyBinBtn.addEventListener("click", emptyBin);
+      document.addEventListener("pointerdown", onSwipeDown, true);
+      document.addEventListener("pointermove", onSwipeMove, { passive: false });
+      document.addEventListener("pointerup", onSwipeUp);
+      document.addEventListener("pointercancel", onSwipeUp);
       els.calTodayBtn.addEventListener("click", function () { state.selectedDate = defaultDate(); renderCalendar(); });
       els.kidSearchInput.addEventListener("input", renderKids);
       els.newFromSearchBtn.addEventListener("click", function () { newDraft(els.kidSearchInput.value.trim()); });
@@ -1375,6 +1633,17 @@
       els.deleteKidBtn.addEventListener("click", deleteKidFile);
       els.addProjectBtn.addEventListener("click", addProject);
       document.addEventListener("click", function (event) {
+        if (swipeSuppressClick) return; // a swipe just happened; don't treat it as a tap
+        const binKidBtn = event.target.closest("[data-bin-kid]");
+        if (binKidBtn) { binKid(binKidBtn.dataset.binKid); return; }
+        const restoreKidBtn = event.target.closest("[data-restore-kid]");
+        if (restoreKidBtn) { restoreKid(restoreKidBtn.dataset.restoreKid); return; }
+        const destroyKidBtn = event.target.closest("[data-destroy-kid]");
+        if (destroyKidBtn) { destroyKid(destroyKidBtn.dataset.destroyKid); return; }
+        const restoreProjBtn = event.target.closest("[data-restore-project]");
+        if (restoreProjBtn) { restoreProject(restoreProjBtn.dataset.restoreProject); return; }
+        const destroyProjBtn = event.target.closest("[data-destroy-project]");
+        if (destroyProjBtn) { destroyProject(destroyProjBtn.dataset.destroyProject); return; }
         const calDay = event.target.closest("[data-cal-day]");
         if (calDay) { state.selectedDate = calDay.dataset.calDay; renderCalendar(); return; }
         const sideBtn = event.target.closest("[data-side]");
