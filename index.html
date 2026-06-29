@@ -144,6 +144,9 @@
     .search svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; fill: var(--text-3); pointer-events: none; }
     .search input { height: 48px; padding-left: 44px; border-radius: 999px; background: var(--surface-2); border-color: transparent; }
     .search input:focus { background: var(--surface); border-color: var(--red); }
+    .filter-row { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 10px; }
+    .filter-row select { height: 40px; border-radius: 999px; background: var(--surface-2); border-color: transparent; padding: 0 14px; color: var(--text-2); }
+    .filter-row select:focus { background: var(--surface); border-color: var(--red); color: var(--text); }
 
     /* ---------- Layout ---------- */
     main { flex: 1 1 auto; min-width: 0; }
@@ -565,6 +568,21 @@
               <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
               <input id="kidSearchInput" type="search" placeholder="Search kids" aria-label="Search kids">
             </div>
+            <div class="filter-row">
+              <select id="kidDivisionFilter" aria-label="Filter kids by division">
+                <option value="">All divisions</option>
+                <option value="Super Scout">Super Scout</option>
+                <option value="Scout">Scout</option>
+                <option value="Ranger">Ranger</option>
+                <option value="Trailblazer">Trailblazer</option>
+                <option value="Brave">Brave</option>
+                <option value="Chief">Chief</option>
+                <option value="Freshman">Freshman</option>
+                <option value="Sophmore">Sophmore</option>
+                <option value="Junior">Junior</option>
+                <option value="Senior Senior">Senior Senior</option>
+              </select>
+            </div>
             <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:12px;">
               <span id="kidCount" class="status"></span>
               <button id="newFromSearchBtn" class="btn tonal" type="button" style="height:36px; padding:0 16px;">
@@ -819,7 +837,7 @@
         "openSheetBtn", "refreshBtn", "logoutBtn", "expiredBanner", "reauthBtn", "bannerStatus",
         "appTabs", "tabFiles", "tabCalendar", "tabStats", "tabBin",
         "binView", "binList", "binCount", "binStatus", "emptyBinBtn",
-        "kidSearchInput", "newFromSearchBtn", "kidCount", "kidList",
+        "kidSearchInput", "kidDivisionFilter", "newFromSearchBtn", "kidCount", "kidList",
         "kidCheckins", "kidCheckinCount", "kidAttendanceMap", "kidAttendanceLegend", "kidAttendanceCount",
         "fileTitle", "fileSubtitle", "saveKidBtn", "deleteKidBtn",
         "kidNameInput", "divisionInput", "sideSelect", "fileStatus", "projectCount",
@@ -1177,7 +1195,7 @@
     function newDraft(name) {
       state.selectedKidId = "";
       els.kidNameInput.value = name || "";
-      els.divisionInput.value = "";
+      els.divisionInput.value = els.kidDivisionFilter ? (els.kidDivisionFilter.value || "") : "";
       els.sideSelect.value = "";
       els.fileTitle.textContent = "New kid file";
       els.fileSubtitle.textContent = "Fill the fields, save the file, then add projects.";
@@ -1186,14 +1204,19 @@
     }
     function renderKids() {
       const query = String(els.kidSearchInput.value || "").trim().toLowerCase();
+      const divisionFilter = String(els.kidDivisionFilter.value || "").trim();
       const kids = state.kids.filter(function (kid) {
         const haystack = [kid.name, kid.division, kid.side].join(" ").toLowerCase();
-        return !query || haystack.includes(query);
+        const matchesSearch = !query || haystack.includes(query);
+        const matchesDivision = !divisionFilter || kid.division === divisionFilter;
+        return matchesSearch && matchesDivision;
       });
       els.kidCount.textContent = kids.length + " of " + state.kids.length + " kids";
       if (!kids.length) {
         const name = escapeHtml(els.kidSearchInput.value.trim());
+        const division = escapeHtml(divisionFilter);
         els.kidList.innerHTML = '<div class="empty">No kid file found' + (name ? ' for "' + name + '"' : "") +
+          (division ? ' in ' + division : "") +
           '.<br><br><button class="btn tonal" type="button" data-create-from-empty>Create new file</button></div>';
         return;
       }
@@ -2002,6 +2025,7 @@
       document.addEventListener("pointercancel", onSwipeUp);
       els.calTodayBtn.addEventListener("click", function () { state.selectedDate = defaultDate(); renderCalendar(); });
       els.kidSearchInput.addEventListener("input", renderKids);
+      els.kidDivisionFilter.addEventListener("change", renderKids);
       els.newFromSearchBtn.addEventListener("click", function () { newDraft(els.kidSearchInput.value.trim()); });
       els.saveKidBtn.addEventListener("click", saveKidFile);
       els.deleteKidBtn.addEventListener("click", deleteKidFile);
