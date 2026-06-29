@@ -75,20 +75,24 @@
     .user-chip img { width: 32px; height: 32px; border-radius: 50%; background: var(--surface-2); object-fit: cover; }
     .user-chip span { font-size: 0.86rem; color: var(--text); max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-    /* ---------- Tabs ---------- */
-    .tabs { display: flex; gap: 4px; padding: 0 12px; border-top: 1px solid var(--border); }
-    .tab {
-      border: 0; background: transparent; color: var(--text-2);
-      height: 48px; padding: 0 18px; display: inline-flex; align-items: center; gap: 8px;
-      font-weight: 500; font-size: 0.88rem; position: relative; letter-spacing: .01em;
+    /* ---------- App tools ---------- */
+    .appbar-search { flex: 1 1 420px; max-width: 560px; min-width: 220px; }
+    .appbar-search input { height: 42px; }
+    .today-action { height: 38px; padding: 0 18px; }
+    .menu-wrap { position: relative; }
+    .action-menu {
+      position: absolute; right: 0; top: calc(100% + 8px); width: 230px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+      box-shadow: var(--elev-2); padding: 8px; display: grid; gap: 2px; z-index: 30;
     }
-    .tab svg { width: 20px; height: 20px; fill: currentColor; }
-    .tab:hover { background: var(--hover); border-radius: 8px 8px 0 0; color: var(--text); }
-    .tab.active { color: var(--red); }
-    .tab.active::after {
-      content: ""; position: absolute; left: 12px; right: 12px; bottom: 0; height: 3px;
-      background: var(--red); border-radius: 3px 3px 0 0;
+    .menu-item {
+      width: 100%; min-height: 40px; border: 0; border-radius: 8px; background: transparent;
+      padding: 9px 10px; display: flex; align-items: center; gap: 10px;
+      color: var(--text); text-align: left; font-weight: 500;
     }
+    .menu-item:hover { background: var(--hover); }
+    .menu-item svg { width: 19px; height: 19px; fill: currentColor; color: var(--text-2); flex: none; }
+    .menu-divider { height: 1px; background: var(--border); margin: 4px 2px; }
 
     /* ---------- Expired-session banner ---------- */
     .expired-banner {
@@ -188,9 +192,25 @@
     .login-body { padding: 28px 32px 32px; display: grid; gap: 18px; }
     .login-body p { margin: 0; color: var(--text-2); font-size: 0.95rem; line-height: 1.5; }
 
-    /* ---------- Files view ---------- */
-    .workspace { display: grid; grid-template-columns: minmax(300px, 360px) minmax(0, 1fr); gap: 20px; align-items: start; }
-    .kid-list { display: grid; gap: 8px; margin-top: 14px; max-height: calc(100vh - 240px); overflow: auto; padding-right: 2px; }
+    /* ---------- Workbench ---------- */
+    .workbench-view { max-width: none; padding: 16px; }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(280px, 320px) minmax(430px, 1fr) minmax(360px, 420px);
+      gap: 12px;
+      align-items: start;
+    }
+    .workbench-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      min-width: 0;
+    }
+    .workbench-pad { padding: 14px; }
+    .panel-title { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .panel-title h2, .panel-title h3 { font-size: 1rem; }
+    .panel-title .sub { color: var(--text-2); font-size: 0.8rem; margin-top: 2px; }
+    .kid-list { display: grid; gap: 8px; margin-top: 14px; max-height: calc(100vh - 238px); overflow: auto; padding-right: 2px; }
     .kid-card {
       border: 1px solid var(--border); border-radius: 12px; background: var(--surface);
       padding: 12px 14px; text-align: left; display: grid; gap: 6px; width: 100%;
@@ -200,21 +220,21 @@
     .kid-card.active { border-color: var(--red); background: var(--red-container); }
     .kid-card strong { font-size: 0.95rem; font-weight: 500; color: var(--text); }
     .kid-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--text-2); font-size: 0.78rem; }
-    .detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-    .detail-head h2 { font-size: 1.5rem; }
+    .detail-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+    .detail-head h2 { font-size: 1.25rem; }
     .detail-head .sub { color: var(--text-2); margin-top: 4px; font-size: 0.9rem; }
     .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .form-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+    .form-row { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 16px; }
     .block-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 22px 0 12px; }
     .block-head h3 { font-size: 1.05rem; }
-    .project-form { display: grid; grid-template-columns: minmax(180px, 1fr) 150px 150px auto; gap: 12px; align-items: end; }
+    .project-form { display: grid; grid-template-columns: 1fr; gap: 10px; align-items: end; }
     .projects { display: grid; gap: 10px; margin-top: 14px; }
     .project-card {
-      border: 1px solid var(--border); border-left: 4px solid var(--red); border-radius: 10px;
-      background: var(--surface); padding: 12px 14px;
-      display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: end;
+      border: 1px solid var(--border); border-left: 4px solid var(--project-color, var(--red)); border-radius: 10px;
+      background: var(--surface); padding: 12px;
+      display: grid; gap: 10px; align-items: end;
     }
-    .project-edit-grid { display: grid; grid-template-columns: minmax(160px, 1fr) 150px 150px; gap: 12px; min-width: 0; }
+    .project-edit-grid { display: grid; grid-template-columns: 1fr; gap: 10px; min-width: 0; }
     .project-actions { display: flex; gap: 6px; align-items: end; flex-wrap: wrap; justify-content: flex-end; }
 
     /* swipe-to-delete */
@@ -234,13 +254,13 @@
     .ci-chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .kid-attendance-wrap { margin-top: 10px; overflow-x: auto; }
     .kid-attendance {
-      min-width: 620px;
+      min-width: 520px;
       display: grid;
       gap: 8px;
     }
     .kid-cal-dows {
       display: grid;
-      grid-template-columns: repeat(7, minmax(72px, 1fr));
+      grid-template-columns: repeat(7, minmax(58px, 1fr));
       gap: 6px;
       padding-left: 42px;
       color: var(--text-3);
@@ -271,7 +291,7 @@
     .kid-cal-board {
       position: relative;
       display: grid;
-      grid-template-columns: repeat(7, minmax(72px, 1fr));
+      grid-template-columns: repeat(7, minmax(58px, 1fr));
       grid-template-rows: repeat(10, minmax(56px, auto));
       gap: 6px;
     }
@@ -435,6 +455,36 @@
     .badge.end { background: #fce8e6; color: var(--bad); }
     .badge.ongoing { background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
 
+    .calendar-pane, .kid-file-pane, .kid-roster { position: sticky; top: 80px; max-height: calc(100vh - 96px); overflow: auto; }
+    .cal-head { margin-bottom: 12px; }
+    .cal-head h2 { font-size: 1.12rem; }
+    .week-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .cal-grid { display: grid; gap: 10px; min-width: 0; }
+    .week-focus { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+    .week-strip { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; }
+    .week-chip {
+      border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2);
+      min-height: 34px; padding: 5px 4px; color: var(--text-2); font-weight: 700; font-size: 0.7rem;
+    }
+    .week-chip.active { border-color: var(--red); background: var(--red-container); color: var(--red-dark); }
+    .week-chip small { display: block; margin-top: 1px; font-weight: 400; color: inherit; opacity: .8; }
+    .cal-dow { text-align: left; padding: 0 2px; }
+    .cal-day { min-height: 112px; border-radius: 12px; }
+    .cal-day.empty { background-image: none; }
+    .day-panel { position: static; max-height: none; overflow: visible; border-top: 1px solid var(--border); margin-top: 14px; padding-top: 14px; }
+    .day-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .day-stats { margin: 0 0 12px; justify-content: flex-end; }
+    .active-projects, .history-panel { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 12px; }
+    .active-projects summary, .history-panel summary {
+      cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      color: var(--text); font-weight: 600; list-style: none;
+    }
+    .active-projects summary::-webkit-details-marker, .history-panel summary::-webkit-details-marker { display: none; }
+    .active-projects summary::after, .history-panel summary::after { content: "Show"; color: var(--red); font-size: 0.78rem; font-weight: 700; }
+    .active-projects[open] summary::after, .history-panel[open] summary::after { content: "Hide"; }
+    .admin-panel { max-width: 1180px; }
+    .mobile-switcher { display: none; }
+
     /* ---------- Stats view ---------- */
     .stats-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; }
     .stat-card { padding: 18px; }
@@ -456,18 +506,39 @@
     .kid-stat-row .ks-metrics { display: flex; gap: 6px; align-items: center; }
 
     @media (max-width: 960px) {
-      .workspace, .cal-layout, .stats-grid { grid-template-columns: 1fr; }
+      .workspace { grid-template-columns: minmax(260px, 320px) minmax(0, 1fr); }
+      .kid-file-pane { grid-column: 1 / -1; }
+      .stats-grid { grid-template-columns: 1fr; }
+      .appbar-search { max-width: none; }
       .kid-list { max-height: none; }
-      .day-panel { position: static; max-height: none; overflow: visible; }
+      .calendar-pane, .kid-file-pane, .kid-roster { position: static; max-height: none; overflow: visible; }
       .form-row, .project-form, .project-card, .project-edit-grid { grid-template-columns: 1fr; }
       .project-actions { justify-content: flex-start; }
     }
     @media (max-width: 600px) {
-      .appbar-row { padding: 0 10px; gap: 8px; }
+      body { padding-bottom: 58px; }
+      .appbar-row { min-height: 64px; height: auto; padding: 8px 10px; gap: 8px; flex-wrap: wrap; }
+      .brand { flex: 1 1 auto; }
+      .appbar-search { order: 3; flex-basis: 100%; min-width: 0; }
       .user-chip span { display: none; }
       .view { padding: 14px; }
-      .tabs { padding: 0 6px; }
-      .tab { padding: 0 12px; }
+      .workbench-view { padding: 10px; }
+      .workspace { grid-template-columns: 1fr; }
+      .kid-roster, .calendar-pane, .kid-file-pane { display: none; }
+      body.mobile-kids .kid-roster, body.mobile-today .calendar-pane, body.mobile-file .kid-file-pane { display: block; }
+      .week-focus { grid-template-columns: 1fr; }
+      .week-strip { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+      .cal-day { min-height: 72px; }
+      .mobile-switcher {
+        position: fixed; left: 0; right: 0; bottom: 0; z-index: 35;
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+        padding: 7px 8px calc(7px + env(safe-area-inset-bottom));
+        background: var(--surface); border-top: 1px solid var(--border); box-shadow: var(--elev-1);
+      }
+      .mobile-switcher button { border: 0; border-radius: 999px; background: transparent; color: var(--text-2); padding: 10px 6px; font-weight: 700; }
+      body.mobile-kids .mobile-switcher [data-mobile-view="kids"],
+      body.mobile-today .mobile-switcher [data-mobile-view="today"],
+      body.mobile-file .mobile-switcher [data-mobile-view="file"] { background: var(--red-container); color: var(--red-dark); }
       .modal { align-items: flex-end; padding: 0; }
       .modal-card { width: 100%; max-height: 88vh; border-radius: 16px 16px 0 0; }
     }
@@ -494,41 +565,48 @@
           <svg class="gl-wordmark" viewBox="0 0 1068.54 162.18" role="img" aria-label="Greylock"><use href="#gl-wordmark"/></svg>
           <span class="brand-tag">Radio</span>
         </div>
+        <div class="search appbar-search hidden" id="kidSearchShell">
+          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
+          <input id="kidSearchInput" type="search" placeholder="Search kids, divisions, sides, projects" aria-label="Search kids">
+        </div>
         <div class="spacer"></div>
         <div class="appbar-actions">
+          <button id="calTodayBtn" class="btn outline today-action hidden" type="button">Today</button>
           <div id="userChip" class="user-chip hidden">
             <img id="userPhoto" alt="">
             <span id="userName"></span>
           </div>
-          <button id="openSheetBtn" class="icon-btn hidden" type="button" title="Open Google Sheet" aria-label="Open Google Sheet">
-            <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
-          </button>
-          <button id="refreshBtn" class="icon-btn hidden" type="button" title="Refresh data" aria-label="Refresh data">
-            <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>
-          </button>
-          <button id="logoutBtn" class="icon-btn hidden" type="button" title="Sign out" aria-label="Sign out">
-            <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5z"/></svg>
-          </button>
+          <div id="actionMenuWrap" class="menu-wrap hidden">
+            <button id="actionMenuBtn" class="icon-btn" type="button" title="Actions" aria-label="Actions" aria-expanded="false">
+              <svg viewBox="0 0 24 24"><path d="M12 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm0 6a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/></svg>
+            </button>
+            <div id="actionMenu" class="action-menu hidden" role="menu">
+              <button id="refreshBtn" class="menu-item hidden" type="button" role="menuitem">
+                <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg>
+                Refresh data
+              </button>
+              <button id="openSheetBtn" class="menu-item hidden" type="button" role="menuitem">
+                <svg viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>
+                Open Google Sheet
+              </button>
+              <div class="menu-divider"></div>
+              <button id="statsMenuBtn" class="menu-item" type="button" role="menuitem">
+                <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
+                Statistics
+              </button>
+              <button id="binMenuBtn" class="menu-item" type="button" role="menuitem">
+                <svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                Bin
+              </button>
+              <div class="menu-divider"></div>
+              <button id="logoutBtn" class="menu-item hidden" type="button" role="menuitem">
+                <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h8v-2H4V5z"/></svg>
+                Sign out
+              </button>
+            </div>
+          </div>
         </div>
       </div>
-      <nav id="appTabs" class="tabs hidden">
-        <button id="tabFiles" class="tab active" type="button" data-view="files">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
-          Kid files
-        </button>
-        <button id="tabCalendar" class="tab" type="button" data-view="calendar">
-          <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zm0 16H5V9h14v10zM5 7V5h14v2H5z"/></svg>
-          Calendar
-        </button>
-        <button id="tabStats" class="tab" type="button" data-view="stats">
-          <svg viewBox="0 0 24 24"><path d="M5 9.2h3V19H5zM10.6 5h2.8v14h-2.8zm5.6 8H19v6h-2.8z"/></svg>
-          Statistics
-        </button>
-        <button id="tabBin" class="tab" type="button" data-view="bin">
-          <svg viewBox="0 0 24 24"><path d="M6 19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-          Bin
-        </button>
-      </nav>
       <div id="expiredBanner" class="expired-banner hidden" role="alert">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
         <div class="eb-text">
@@ -560,13 +638,19 @@
         </div>
       </section>
 
-      <!-- FILES -->
-      <section id="filesView" class="view hidden">
+      <!-- WORKBENCH -->
+      <section id="filesView" class="view workbench-view hidden">
         <div class="workspace">
-          <aside class="card card-pad">
-            <div class="search">
-              <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27a6.5 6.5 0 1 0-.7.7l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0A4.5 4.5 0 1 1 14 9.5 4.5 4.5 0 0 1 9.5 14z"/></svg>
-              <input id="kidSearchInput" type="search" placeholder="Search kids" aria-label="Search kids">
+          <aside class="workbench-panel workbench-pad kid-roster">
+            <div class="panel-title">
+              <div>
+                <h2>Kids</h2>
+                <div id="kidCount" class="sub"></div>
+              </div>
+              <button id="newFromSearchBtn" class="btn tonal" type="button" style="height:34px; padding:0 14px;">
+                <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                New
+              </button>
             </div>
             <div class="filter-row">
               <select id="kidDivisionFilter" aria-label="Filter kids by division">
@@ -583,17 +667,45 @@
                 <option value="Senior Senior">Senior Senior</option>
               </select>
             </div>
-            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:12px;">
-              <span id="kidCount" class="status"></span>
-              <button id="newFromSearchBtn" class="btn tonal" type="button" style="height:36px; padding:0 16px;">
-                <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor;"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
-                New file
-              </button>
-            </div>
             <div id="kidList" class="kid-list"></div>
           </aside>
 
-          <section class="card card-pad">
+          <section id="calendarView" class="workbench-panel workbench-pad calendar-pane">
+            <div class="cal-head">
+              <div>
+                <h2>Daily check-in</h2>
+                <div id="calWindowLabel" class="sub"></div>
+              </div>
+              <div class="week-actions">
+                <button id="calPrevWeekBtn" class="btn neutral" type="button" style="height:34px; padding:0 12px;">Previous</button>
+                <button id="calNextWeekBtn" class="btn neutral" type="button" style="height:34px; padding:0 12px;">Next</button>
+              </div>
+            </div>
+            <div class="cal-scroll">
+              <div id="calGrid" class="cal-grid"></div>
+            </div>
+            <section class="day-panel">
+              <div class="day-head">
+                <div>
+                  <h3 id="dayTitle">Pick a day</h3>
+                  <div id="dayWeek" class="day-week"></div>
+                </div>
+                <div id="dayStats" class="day-stats"></div>
+              </div>
+
+              <div class="section-label">Check in by period</div>
+              <div id="periodSide" class="seg"></div>
+              <div id="dayPeriods" class="periods-list"></div>
+              <div id="dayCheckStatus" class="status"></div>
+
+              <details class="active-projects">
+                <summary>Projects active today</summary>
+                <div id="dayList" class="day-list"></div>
+              </details>
+            </section>
+          </section>
+
+          <section class="workbench-panel workbench-pad kid-file-pane">
             <div class="detail-head">
               <div>
                 <span class="pill red">Kid file</span>
@@ -668,54 +780,25 @@
             <div id="kidAttendanceMap" class="kid-attendance-wrap"></div>
             <div id="kidAttendanceLegend" class="kid-cycle-legend"></div>
 
-            <div class="block-head">
-              <div>
-                <h3>Check-in history</h3>
-                <div class="muted" style="font-size:0.82rem;">Recorded from the Calendar tab, per period.</div>
-              </div>
-              <span id="kidCheckinCount" class="pill">0 check-ins</span>
-            </div>
-            <div id="kidCheckins" class="ci-list"></div>
+            <details class="history-panel">
+              <summary>
+                <span>Check-in history</span>
+                <span id="kidCheckinCount" class="pill">0 check-ins</span>
+              </summary>
+              <div id="kidCheckins" class="ci-list"></div>
+            </details>
           </section>
         </div>
       </section>
 
-      <!-- CALENDAR -->
-      <section id="calendarView" class="view hidden">
-        <div class="cal-head">
-          <div>
-            <h2>Camp calendar</h2>
-            <div id="calWindowLabel" class="sub"></div>
-          </div>
-          <button id="calTodayBtn" class="btn outline" type="button" style="height:36px;">Jump to today</button>
-        </div>
-        <div class="cal-layout">
-          <div class="card card-pad cal-scroll">
-            <div id="calGrid" class="cal-grid"></div>
-          </div>
-          <aside class="card card-pad day-panel">
-            <h3 id="dayTitle">Pick a day</h3>
-            <div id="dayWeek" class="day-week"></div>
-            <div id="dayStats" class="day-stats"></div>
-
-            <div class="section-label">Check in by period</div>
-            <div id="periodSide" class="seg"></div>
-            <div id="dayPeriods" class="periods-list"></div>
-            <div id="dayCheckStatus" class="status"></div>
-
-            <div class="section-label" style="margin-top:18px;">Projects active today</div>
-            <div id="dayList" class="day-list"></div>
-          </aside>
-        </div>
-      </section>
-
       <!-- STATS -->
-      <section id="statsView" class="view hidden">
+      <section id="statsView" class="view admin-panel hidden">
         <div class="cal-head">
           <div>
             <h2>Statistics</h2>
             <div id="statsWindowLabel" class="sub"></div>
           </div>
+          <button class="btn outline" type="button" data-close-panel>Back to workbench</button>
         </div>
         <div id="statsSummary" class="stats-summary"></div>
         <div class="stats-grid">
@@ -731,18 +814,27 @@
       </section>
 
       <!-- BIN -->
-      <section id="binView" class="view hidden">
+      <section id="binView" class="view admin-panel hidden">
         <div class="cal-head">
           <div>
             <h2>Bin</h2>
             <div class="sub">Deleted items stay here until you remove them permanently. <span id="binCount" class="muted"></span></div>
           </div>
-          <button id="emptyBinBtn" class="btn danger" type="button">Empty bin</button>
+          <div class="detail-actions">
+            <button class="btn outline" type="button" data-close-panel>Back to workbench</button>
+            <button id="emptyBinBtn" class="btn danger" type="button">Empty bin</button>
+          </div>
         </div>
         <div id="binStatus" class="status"></div>
         <div class="card card-pad"><div id="binList"></div></div>
       </section>
     </main>
+
+    <nav id="mobileSwitcher" class="mobile-switcher hidden" aria-label="Workbench sections">
+      <button type="button" data-mobile-view="kids">Kids</button>
+      <button type="button" data-mobile-view="today">Today</button>
+      <button type="button" data-mobile-view="file">File</button>
+    </nav>
 
     <!-- Check-in search popup -->
     <div id="searchModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Check in kids">
@@ -820,7 +912,9 @@
       binnedKids: [],
       binnedProjects: [],
       selectedKidId: "",
-      view: "files",
+      view: "workbench",
+      activePanel: "",
+      mobileView: "today",
       selectedDate: "",
       checkinSide: "Junior side",
       searchPeriod: 0,
@@ -835,14 +929,14 @@
         "loginView", "filesView", "calendarView", "statsView",
         "loginBtn", "loginStatus", "userChip", "userPhoto", "userName",
         "openSheetBtn", "refreshBtn", "logoutBtn", "expiredBanner", "reauthBtn", "bannerStatus",
-        "appTabs", "tabFiles", "tabCalendar", "tabStats", "tabBin",
+        "kidSearchShell", "actionMenuWrap", "actionMenuBtn", "actionMenu", "statsMenuBtn", "binMenuBtn", "mobileSwitcher",
         "binView", "binList", "binCount", "binStatus", "emptyBinBtn",
         "kidSearchInput", "kidDivisionFilter", "newFromSearchBtn", "kidCount", "kidList",
         "kidCheckins", "kidCheckinCount", "kidAttendanceMap", "kidAttendanceLegend", "kidAttendanceCount",
         "fileTitle", "fileSubtitle", "saveKidBtn", "deleteKidBtn",
         "kidNameInput", "divisionInput", "sideSelect", "fileStatus", "projectCount",
         "projectNameInput", "projectStartInput", "projectEndInput", "addProjectBtn", "projectsList",
-        "calWindowLabel", "calTodayBtn", "calGrid", "dayTitle", "dayWeek", "dayStats", "dayList",
+        "calWindowLabel", "calTodayBtn", "calPrevWeekBtn", "calNextWeekBtn", "calGrid", "dayTitle", "dayWeek", "dayStats", "dayList",
         "periodSide", "dayPeriods", "dayCheckStatus",
         "searchModal", "searchModalClose", "searchModalTitle", "searchModalSub", "checkinSearchInput", "searchResults", "searchCount",
         "statsWindowLabel", "statsSummary", "statsWeeks", "statsKids"
@@ -992,7 +1086,7 @@
       } catch (e) { return null; }
     }
     function clearStoredToken() { try { localStorage.removeItem(TOKEN_STORAGE_KEY); } catch (e) {} }
-    function appIsActive() { return els.appTabs && !els.appTabs.classList.contains("hidden"); }
+    function appIsActive() { return els.filesView && !els.filesView.classList.contains("hidden"); }
     function scheduleExpiryWatch() {
       if (state.expiryTimer) { clearTimeout(state.expiryTimer); state.expiryTimer = null; }
       if (!state.accessTokenExpiresAt) return;
@@ -1166,28 +1260,39 @@
         .sort(function (a, b) { return String(b.startDate || "").localeCompare(String(a.startDate || "")); });
     }
 
-    /* ---------- View switching ---------- */
-    function setView(view) {
-      state.view = view;
-      els.filesView.classList.toggle("hidden", view !== "files");
-      els.calendarView.classList.toggle("hidden", view !== "calendar");
-      els.statsView.classList.toggle("hidden", view !== "stats");
-      els.binView.classList.toggle("hidden", view !== "bin");
-      els.tabFiles.classList.toggle("active", view === "files");
-      els.tabCalendar.classList.toggle("active", view === "calendar");
-      els.tabStats.classList.toggle("active", view === "stats");
-      els.tabBin.classList.toggle("active", view === "bin");
-      if (view === "calendar") renderCalendar();
-      else if (view === "stats") renderStats();
-      else if (view === "bin") renderBin();
-      else { renderKids(); renderSelectedKid(); renderProjects(); renderKidAttendanceCalendar(); renderKidCheckins(); }
+    /* ---------- Workbench and secondary panels ---------- */
+    function setMobileView(view) {
+      state.mobileView = view || "today";
+      document.body.classList.toggle("mobile-kids", state.mobileView === "kids");
+      document.body.classList.toggle("mobile-today", state.mobileView === "today");
+      document.body.classList.toggle("mobile-file", state.mobileView === "file");
+    }
+    function toggleActionMenu(force) {
+      const open = typeof force === "boolean" ? force : els.actionMenu.classList.contains("hidden");
+      els.actionMenu.classList.toggle("hidden", !open);
+      els.actionMenuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    function showWorkbench() {
+      state.activePanel = "";
+      els.filesView.classList.remove("hidden");
+      els.statsView.classList.add("hidden");
+      els.binView.classList.add("hidden");
+      renderAll();
+    }
+    function openPanel(panel) {
+      state.activePanel = panel;
+      toggleActionMenu(false);
+      els.filesView.classList.add("hidden");
+      els.statsView.classList.toggle("hidden", panel !== "stats");
+      els.binView.classList.toggle("hidden", panel !== "bin");
+      if (panel === "stats") renderStats();
+      if (panel === "bin") renderBin();
       if (state.sessionExpired) lockWrites(true);
     }
     function renderAll() {
-      renderKids(); renderSelectedKid(); renderProjects(); renderKidAttendanceCalendar(); renderKidCheckins();
-      if (state.view === "calendar") renderCalendar();
-      else if (state.view === "stats") renderStats();
-      else if (state.view === "bin") renderBin();
+      renderKids(); renderSelectedKid(); renderProjects(); renderKidAttendanceCalendar(); renderKidCheckins(); renderCalendar();
+      if (state.activePanel === "stats") renderStats();
+      if (state.activePanel === "bin") renderBin();
       if (state.sessionExpired) lockWrites(true);
     }
 
@@ -1206,7 +1311,8 @@
       const query = String(els.kidSearchInput.value || "").trim().toLowerCase();
       const divisionFilter = String(els.kidDivisionFilter.value || "").trim();
       const kids = state.kids.filter(function (kid) {
-        const haystack = [kid.name, kid.division, kid.side].join(" ").toLowerCase();
+        const projectText = projectsForKid(kid.id).map(function (p) { return p.name; }).join(" ");
+        const haystack = [kid.name, kid.division, kid.side, projectText].join(" ").toLowerCase();
         const matchesSearch = !query || haystack.includes(query);
         const matchesDivision = !divisionFilter || kid.division === divisionFilter;
         return matchesSearch && matchesDivision;
@@ -1222,6 +1328,8 @@
       }
       els.kidList.innerHTML = kids.map(function (kid) {
         const count = projectsForKid(kid.id).length;
+        const last = liveCheckins().filter(function (c) { return c.kidId === kid.id; })
+          .sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); })[0];
         return '<div class="swipe">' +
           '<div class="swipe-action"><button class="swipe-del" type="button" data-bin-kid="' + escapeHtml(kid.id) + '">Delete</button></div>' +
           '<button class="kid-card swipe-content ' + (kid.id === state.selectedKidId ? "active" : "") + '" type="button" data-select-kid="' + escapeHtml(kid.id) + '">' +
@@ -1230,6 +1338,7 @@
           (kid.division ? '<span class="pill">' + escapeHtml(kid.division) + '</span>' : '') +
           (kid.side ? '<span class="pill">' + escapeHtml(kid.side) + '</span>' : '') +
           '<span>' + count + (count === 1 ? ' project' : ' projects') + '</span>' +
+          (last ? '<span class="pill red">Last ' + escapeHtml(monthDay(parseISO(last.date))) + '</span>' : '') +
           '</div></button></div>';
       }).join("");
     }
@@ -1257,8 +1366,8 @@
       els.addProjectBtn.disabled = !kid || !kid.id;
       if (!kid) { els.projectsList.innerHTML = '<div class="empty">Save or select a kid file before adding projects.</div>'; return; }
       if (!projects.length) { els.projectsList.innerHTML = '<div class="empty">No projects yet for this kid.</div>'; return; }
-      els.projectsList.innerHTML = projects.map(function (p) {
-        return '<article class="project-card">' +
+      els.projectsList.innerHTML = projects.map(function (p, index) {
+        return '<article class="project-card" style="--project-color:' + escapeHtml(projectColor(p, index)) + '">' +
           '<div class="project-edit-grid">' +
           '<label class="field"><span>Project</span><input data-project-field="name" data-project-id="' + escapeHtml(p.id) + '" value="' + escapeHtml(p.name || "") + '" placeholder="Project name"></label>' +
           '<label class="field"><span>Start</span><input data-project-field="startDate" data-project-id="' + escapeHtml(p.id) + '" type="date" value="' + escapeHtml((p.startDate || "").slice(0, 10)) + '"></label>' +
@@ -1426,7 +1535,7 @@
     }
 
     /* ---------- Calendar view ---------- */
-    function renderCalendar() {
+    function renderCalendarLegacy() {
       const start = windowStart();
       const todayIso = toISO(new Date());
       const sel = state.selectedDate || (state.selectedDate = defaultDate());
@@ -1469,6 +1578,62 @@
         }
       }
       els.calGrid.innerHTML = html;
+      renderDay();
+    }
+    function renderCalendar() {
+      const start = windowStart();
+      const todayIso = toISO(new Date());
+      const sel = state.selectedDate || (state.selectedDate = defaultDate());
+      const lastDay = addDays(start, CAMP_WEEKS * 7 - 1);
+      const selectedWeek = Math.max(0, Math.min(CAMP_WEEKS - 1, weekIndexOfISO(sel)));
+      const weekStart = addDays(start, selectedWeek * 7);
+      const weekEnd = addDays(weekStart, 6);
+      els.calWindowLabel.textContent = "Week " + (selectedWeek + 1) + " · " + fmtRange(weekStart, weekEnd) + " · Camp window " + monthDayFull(start) + " - " + monthDayFull(lastDay);
+
+      const checkinKidsByDay = {};
+      liveCheckins().forEach(function (c) { (checkinKidsByDay[c.date] = checkinKidsByDay[c.date] || {})[c.kidId] = true; });
+      const counts = {};
+      const projectCounts = {};
+      let maxCount = 0;
+      for (let i = 0; i < CAMP_WEEKS * 7; i++) {
+        const iso = toISO(addDays(start, i));
+        const c = checkinKidsByDay[iso] ? Object.keys(checkinKidsByDay[iso]).length : 0;
+        counts[iso] = c;
+        if (c > maxCount) maxCount = c;
+        projectCounts[iso] = state.projects.filter(function (p) { return projectActiveOn(p, iso); }).length;
+      }
+
+      let week = '<div class="week-focus">';
+      for (let d = 0; d < 7; d++) {
+        const date = addDays(weekStart, d);
+        const iso = toISO(date);
+        const c = counts[iso];
+        const pCount = projectCounts[iso] || 0;
+        const heat = maxCount ? (0.12 + 0.68 * (c / maxCount)) : 0;
+        const classes = ["cal-day"];
+        if (iso === todayIso) classes.push("today");
+        if (iso === sel) classes.push("selected");
+        if (!c) classes.push("empty");
+        week += '<button class="' + classes.join(" ") + '" type="button" data-cal-day="' + iso + '"' +
+          (c ? ' title="' + c + (c === 1 ? ' kid' : ' kids') + ' checked in"' : '') +
+          ' style="--heat:' + (c ? heat.toFixed(3) : 0) + '">' +
+          '<span class="cal-dow">' + DOW_SHORT[date.getDay()] + '</span>' +
+          '<span class="cal-num">' + date.getDate() + ' <em>' + MONTHS[date.getMonth()] + '</em></span>' +
+          (c ? '<span class="cal-count">' + c + '</span>' : '<span class="period-empty">No check-ins</span>') +
+          (pCount ? '<span class="pill">' + pCount + ' active project' + (pCount === 1 ? '' : 's') + '</span>' : '') +
+          '</button>';
+      }
+      week += '</div>';
+
+      let strip = '<div class="week-strip">';
+      for (let w = 0; w < CAMP_WEEKS; w++) {
+        const wStart = addDays(start, w * 7);
+        strip += '<button class="week-chip' + (w === selectedWeek ? ' active' : '') + '" type="button" data-week="' + w + '">' +
+          'W' + (w + 1) + '<small>' + escapeHtml(MONTHS[wStart.getMonth()] + " " + wStart.getDate()) + '</small></button>';
+      }
+      strip += '</div>';
+
+      els.calGrid.innerHTML = week + strip;
       renderDay();
     }
     function renderDay() {
@@ -1674,7 +1839,7 @@
       const attendedDays = Object.keys(byDate);
       els.kidAttendanceCount.textContent = attendedDays.length + (attendedDays.length === 1 ? " day" : " days");
       if (!attendedDays.length && !kidProjects.length) {
-        els.kidAttendanceMap.innerHTML = '<div class="empty">No attendance or dated projects yet. Check this kid in from the Calendar tab or add project dates above.</div>';
+        els.kidAttendanceMap.innerHTML = '<div class="empty">No attendance or dated projects yet. Check this kid in from the daily workbench or add project dates above.</div>';
         els.kidAttendanceLegend.innerHTML = "";
         return;
       }
@@ -1760,7 +1925,7 @@
       if (!kid) { els.kidCheckins.innerHTML = '<div class="empty">Select a saved kid file to see check-ins.</div>'; els.kidCheckinCount.textContent = ""; return; }
       const list = state.checkins.filter(function (c) { return c.kidId === kid.id; });
       els.kidCheckinCount.textContent = list.length + (list.length === 1 ? " check-in" : " check-ins");
-      if (!list.length) { els.kidCheckins.innerHTML = '<div class="empty">No check-ins yet. Check this kid in from the Calendar tab.</div>'; return; }
+      if (!list.length) { els.kidCheckins.innerHTML = '<div class="empty">No check-ins yet. Check this kid in from the daily workbench.</div>'; return; }
       const byDate = {};
       list.forEach(function (c) { (byDate[c.date] = byDate[c.date] || []).push(c); });
       const dates = Object.keys(byDate).sort(function (a, b) { return b.localeCompare(a); });
@@ -1925,14 +2090,18 @@
     function beginSession() {
       return loadProfile().then(ensureWorkbook).then(readAllSheets).then(function () {
         els.loginView.classList.add("hidden");
-        els.appTabs.classList.remove("hidden");
+        els.kidSearchShell.classList.remove("hidden");
+        els.calTodayBtn.classList.remove("hidden");
+        els.actionMenuWrap.classList.remove("hidden");
+        els.mobileSwitcher.classList.remove("hidden");
         els.refreshBtn.classList.remove("hidden");
         els.logoutBtn.classList.remove("hidden");
         if (state.kids.length && !state.selectedKidId) state.selectedKidId = state.kids[0].id;
         state.selectedDate = defaultDate();
+        setMobileView("today");
         clearExpired();
         scheduleExpiryWatch();
-        setView("files");
+        showWorkbench();
       });
     }
     function signIn() {
@@ -2001,9 +2170,13 @@
       state.accessToken = ""; state.accessTokenExpiresAt = 0; state.spreadsheetId = "";
       state.currentUser = null; state.kids = []; state.projects = []; state.checkins = [];
       state.binnedKids = []; state.binnedProjects = []; state.selectedKidId = "";
-      els.filesView.classList.add("hidden"); els.calendarView.classList.add("hidden"); els.statsView.classList.add("hidden"); els.binView.classList.add("hidden");
+      els.filesView.classList.add("hidden"); els.statsView.classList.add("hidden"); els.binView.classList.add("hidden");
       els.loginView.classList.remove("hidden");
-      els.appTabs.classList.add("hidden");
+      els.kidSearchShell.classList.add("hidden");
+      els.calTodayBtn.classList.add("hidden");
+      els.actionMenuWrap.classList.add("hidden");
+      els.actionMenu.classList.add("hidden");
+      els.mobileSwitcher.classList.add("hidden");
       els.userChip.classList.add("hidden"); els.openSheetBtn.classList.add("hidden");
       els.refreshBtn.classList.add("hidden"); els.logoutBtn.classList.add("hidden");
       setStatus(els.loginStatus, "");
@@ -2014,16 +2187,17 @@
       els.logoutBtn.addEventListener("click", logout);
       els.refreshBtn.addEventListener("click", refreshData);
       els.openSheetBtn.addEventListener("click", function () { if (state.spreadsheetUrl) window.open(state.spreadsheetUrl, "_blank", "noopener"); });
-      els.tabFiles.addEventListener("click", function () { setView("files"); });
-      els.tabCalendar.addEventListener("click", function () { setView("calendar"); });
-      els.tabStats.addEventListener("click", function () { setView("stats"); });
-      els.tabBin.addEventListener("click", function () { setView("bin"); });
+      els.actionMenuBtn.addEventListener("click", function (event) { event.stopPropagation(); toggleActionMenu(); });
+      els.statsMenuBtn.addEventListener("click", function () { openPanel("stats"); });
+      els.binMenuBtn.addEventListener("click", function () { openPanel("bin"); });
       els.emptyBinBtn.addEventListener("click", emptyBin);
       document.addEventListener("pointerdown", onSwipeDown, true);
       document.addEventListener("pointermove", onSwipeMove, { passive: false });
       document.addEventListener("pointerup", onSwipeUp);
       document.addEventListener("pointercancel", onSwipeUp);
-      els.calTodayBtn.addEventListener("click", function () { state.selectedDate = defaultDate(); renderCalendar(); });
+      els.calTodayBtn.addEventListener("click", function () { state.selectedDate = defaultDate(); showWorkbench(); });
+      els.calPrevWeekBtn.addEventListener("click", function () { state.selectedDate = toISO(addDays(parseISO(state.selectedDate || defaultDate()), -7)); renderCalendar(); });
+      els.calNextWeekBtn.addEventListener("click", function () { state.selectedDate = toISO(addDays(parseISO(state.selectedDate || defaultDate()), 7)); renderCalendar(); });
       els.kidSearchInput.addEventListener("input", renderKids);
       els.kidDivisionFilter.addEventListener("change", renderKids);
       els.newFromSearchBtn.addEventListener("click", function () { newDraft(els.kidSearchInput.value.trim()); });
@@ -2031,7 +2205,14 @@
       els.deleteKidBtn.addEventListener("click", deleteKidFile);
       els.addProjectBtn.addEventListener("click", addProject);
       document.addEventListener("click", function (event) {
+        if (!event.target.closest("#actionMenuWrap")) toggleActionMenu(false);
         if (swipeSuppressClick) return; // a swipe just happened; don't treat it as a tap
+        const mobileView = event.target.closest("[data-mobile-view]");
+        if (mobileView) { setMobileView(mobileView.dataset.mobileView); return; }
+        const closePanel = event.target.closest("[data-close-panel]");
+        if (closePanel) { showWorkbench(); return; }
+        const weekBtn = event.target.closest("[data-week]");
+        if (weekBtn) { state.selectedDate = toISO(addDays(windowStart(), Number(weekBtn.dataset.week || 0) * 7)); renderCalendar(); return; }
         const binKidBtn = event.target.closest("[data-bin-kid]");
         if (binKidBtn) { binKid(binKidBtn.dataset.binKid); return; }
         const restoreKidBtn = event.target.closest("[data-restore-kid]");
@@ -2055,9 +2236,9 @@
         const checkinKid = event.target.closest("[data-checkin-kid]");
         if (checkinKid) { addCheckin(state.searchPeriod, checkinKid.dataset.checkinKid); return; }
         const openKid = event.target.closest("[data-open-kid]");
-        if (openKid) { state.selectedKidId = openKid.dataset.openKid; setView("files"); return; }
+        if (openKid) { state.selectedKidId = openKid.dataset.openKid; showWorkbench(); setMobileView("file"); return; }
         const selectKid = event.target.closest("[data-select-kid]");
-        if (selectKid) { state.selectedKidId = selectKid.dataset.selectKid; renderAll(); return; }
+        if (selectKid) { state.selectedKidId = selectKid.dataset.selectKid; renderAll(); setMobileView("file"); return; }
         const createFromEmpty = event.target.closest("[data-create-from-empty]");
         if (createFromEmpty) { newDraft(els.kidSearchInput.value.trim()); return; }
         const deleteProjectBtn = event.target.closest("[data-delete-project]");
