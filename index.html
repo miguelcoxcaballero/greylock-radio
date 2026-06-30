@@ -560,6 +560,26 @@
       .modal { align-items: flex-end; padding: 0; }
       .modal-card { width: 100%; max-height: 88vh; border-radius: 16px 16px 0 0; }
     }
+
+    /* Hard override for the daily date picker so cached/legacy calendar markup cannot collapse into overlapping columns. */
+    .calendar-pane #calGrid.cal-grid,
+    .calendar-pane #calGrid {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) !important;
+      gap: 14px !important;
+      min-width: 0 !important;
+      width: 100% !important;
+    }
+    .calendar-pane .cal-corner,
+    .calendar-pane .cal-week-label,
+    .calendar-pane #calGrid > .cal-dow {
+      display: none !important;
+    }
+    .calendar-pane #calGrid > .cal-day {
+      width: 100% !important;
+      min-width: 0 !important;
+      min-height: 64px !important;
+    }
   </style>
 </head>
 <body>
