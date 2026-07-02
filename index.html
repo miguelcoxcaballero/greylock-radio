@@ -410,22 +410,36 @@
     .seg-btn:hover { color: var(--text); }
     .seg-btn.active { background: var(--red); color: #fff; box-shadow: var(--elev-1); }
     .seg-btn.active small { opacity: .9; }
-    .periods-list { display: grid; gap: 10px; }
-    .period { border: 1px solid var(--border); border-radius: 12px; padding: 12px; display: grid; gap: 10px; background: var(--surface); }
-    .period-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-    .period-id { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
-    .period-n { font-weight: 600; }
-    .period-time { color: var(--text-2); font-size: 0.8rem; }
-    .period-count { min-width: 24px; height: 24px; padding: 0 7px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); font-weight: 600; font-size: 0.78rem; display: inline-flex; align-items: center; justify-content: center; }
-    .period-count.on { background: var(--red); border-color: var(--red); color: #fff; }
+    .periods-list { display: grid; gap: 8px; }
+    .period { border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px 12px; display: grid; gap: 8px; background: var(--surface); }
+    .period-head { display: flex; align-items: center; gap: 8px; }
+    .period-n {
+      width: 26px; height: 26px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--border);
+      display: inline-grid; place-items: center; font-weight: 700; font-size: 0.8rem; color: var(--text-2); flex: none;
+    }
+    .period-time { color: var(--text-2); font-size: 0.82rem; }
+    .period-count { margin-left: auto; font-size: 0.8rem; font-weight: 600; color: var(--text-2); white-space: nowrap; }
+    .period-count b { color: var(--good); font-weight: 700; }
     .period-kids { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-    .period-empty { color: var(--text-3); font-size: 0.8rem; }
-    .chk-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--red-container); color: var(--red-dark); border-radius: 999px; padding: 4px 4px 4px 12px; font-size: 0.8rem; font-weight: 500; }
-    .chk-x { border: 0; background: transparent; color: var(--red-dark); width: 18px; height: 18px; border-radius: 50%; line-height: 1; font-size: 1rem; padding: 0; display: grid; place-items: center; }
-    .chk-x:hover { background: rgba(179,21,27,.15); }
-    .period-add { width: 100%; border: 1px dashed var(--border); background: var(--surface-2); color: var(--text); border-radius: 8px; height: 38px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-weight: 500; font-size: 0.84rem; }
-    .period-add:hover { background: var(--red-container); border-color: var(--red); color: var(--red-dark); }
-    .period-add svg { width: 18px; height: 18px; fill: currentColor; }
+    .period-empty { color: var(--text-3); font-size: 0.8rem; padding: 2px 0; }
+    .p-chip {
+      display: inline-flex; align-items: center; gap: 6px; min-height: 32px;
+      border: 1px solid var(--border); border-radius: 999px; background: var(--surface);
+      padding: 4px 12px; font-size: 0.82rem; font-weight: 500; color: var(--text);
+      transition: background .1s ease, border-color .1s ease, color .1s ease;
+    }
+    .p-chip svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
+    .p-chip.due:hover { border-color: var(--good); color: var(--good); }
+    .p-chip.here { background: #e6f4ea; border-color: rgba(24,128,56,.35); color: #135c2c; }
+    .p-chip.here:hover { background: #d7ecdc; }
+    .p-chip.extra { border-style: dashed; }
+    .p-add {
+      width: 32px; height: 32px; border-radius: 999px; border: 1px dashed var(--border);
+      background: transparent; color: var(--text-2); display: inline-grid; place-items: center; padding: 0;
+    }
+    .p-add:hover { border-color: var(--red); color: var(--red); background: var(--red-container); }
+    .p-add svg { width: 16px; height: 16px; fill: currentColor; }
+    .period-cycle { color: var(--text-3); font-size: 0.72rem; }
 
     /* check-in search popup */
     .modal { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -494,7 +508,8 @@
     .day-panel { position: static; max-height: none; overflow: visible; border-top: 1px solid var(--border); margin-top: 16px; padding-top: 16px; }
     .day-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
     .day-head h3 { font-size: 1.1rem; }
-    .day-stats { margin: 0; justify-content: flex-end; }
+    .day-stats { margin: 2px 0 0; color: var(--text-2); font-size: 0.84rem; text-align: right; }
+    .day-stats b { color: var(--good); font-weight: 700; }
     .active-projects, .history-panel { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 12px; }
     .active-projects summary, .history-panel summary {
       cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -561,25 +576,32 @@
       .modal-card { width: 100%; max-height: 88vh; border-radius: 16px 16px 0 0; }
     }
 
-    /* Hard override for the daily date picker so cached/legacy calendar markup cannot collapse into overlapping columns. */
-    .calendar-pane #calGrid.cal-grid,
-    .calendar-pane #calGrid {
-      display: grid !important;
-      grid-template-columns: minmax(0, 1fr) !important;
-      gap: 14px !important;
-      min-width: 0 !important;
-      width: 100% !important;
-    }
-    .calendar-pane .cal-corner,
-    .calendar-pane .cal-week-label,
-    .calendar-pane #calGrid > .cal-dow {
-      display: none !important;
-    }
-    .calendar-pane #calGrid > .cal-day {
-      width: 100% !important;
-      min-width: 0 !important;
-      min-height: 64px !important;
-    }
+    /* cycle sheet entry modal */
+    .cycle-card { width: min(560px, 100%); }
+    .cycle-meta { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; padding: 4px 16px 12px; }
+    .cycle-meta input[type="date"] { height: 40px; max-width: 190px; }
+    .cycle-body { overflow: auto; padding: 0 16px 16px; display: grid; gap: 12px; }
+    .cyc-row { border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; display: grid; gap: 8px; }
+    .cyc-row-head { display: flex; align-items: baseline; gap: 8px; }
+    .cyc-row-head strong { font-weight: 600; font-size: 0.9rem; }
+    .cyc-row-head span { color: var(--text-2); font-size: 0.78rem; }
+    .cyc-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cyc-chips:empty { display: none; }
+    .cyc-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 4px 4px 4px 11px; font-size: 0.8rem; font-weight: 500; }
+    .cyc-chip.new { border-style: dashed; }
+    .cyc-chip.new::after { content: "new"; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; color: var(--warn); margin-right: 4px; }
+    .chk-x { border: 0; background: transparent; color: inherit; width: 18px; height: 18px; border-radius: 50%; line-height: 1; font-size: 1rem; padding: 0; display: grid; place-items: center; opacity: .65; }
+    .chk-x:hover { background: rgba(0,0,0,.08); opacity: 1; }
+    .cyc-input { position: relative; }
+    .cyc-input input { height: 38px; font-size: 0.88rem; }
+    .cyc-suggest { margin-top: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; max-height: 180px; overflow-y: auto; }
+    .cyc-suggest:empty { display: none; }
+    .cyc-suggest button { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 8px; border: 0; background: transparent; padding: 9px 12px; text-align: left; font-size: 0.86rem; }
+    .cyc-suggest button:hover { background: var(--hover); }
+    .cyc-suggest button small { color: var(--text-2); }
+    .cyc-suggest button.create { color: var(--red); font-weight: 600; }
+    .modal-foot { display: flex; align-items: center; justify-content: flex-end; gap: 10px; padding: 12px 16px 16px; border-top: 1px solid var(--border); }
+    .modal-foot .status { flex: 1; min-height: 0; }
   </style>
 </head>
 <body>
@@ -715,6 +737,10 @@
                 <div id="calWindowLabel" class="sub"></div>
               </div>
               <div class="week-actions">
+                <button id="enterCycleBtn" class="btn tonal" type="button" style="height:34px; padding:0 14px;">
+                  <svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:currentColor;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 12h8v2H8v-2zm0 4h8v2H8v-2z"/></svg>
+                  Cycle sheet
+                </button>
                 <button id="calPrevWeekBtn" class="btn neutral" type="button" style="height:34px; padding:0 12px;">Previous</button>
                 <button id="calNextWeekBtn" class="btn neutral" type="button" style="height:34px; padding:0 12px;">Next</button>
               </div>
@@ -901,6 +927,34 @@
         <div id="searchResults" class="search-results"></div>
       </div>
     </div>
+
+    <!-- Cycle sheet entry -->
+    <div id="cycleModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Enter cycle sheet">
+      <div class="modal-backdrop" data-close-cycle></div>
+      <div class="modal-card cycle-card">
+        <div class="modal-head">
+          <div>
+            <h3>Enter a cycle sheet</h3>
+            <div class="muted" style="font-size:0.82rem;">Type each period's kids. New names create kid files automatically.</div>
+          </div>
+          <button class="icon-btn" type="button" aria-label="Close" data-close-cycle>
+            <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+        </div>
+        <div class="cycle-meta">
+          <div id="cycleSideSeg" class="seg" style="margin:0; width:auto;"></div>
+          <label class="field" style="justify-self:end;"><span>Starting</span>
+            <input id="cycleDateInput" type="date">
+          </label>
+        </div>
+        <div id="cyclePeriods" class="cycle-body"></div>
+        <div class="modal-foot">
+          <div id="cycleStatus" class="status"></div>
+          <button class="btn neutral" type="button" data-close-cycle>Cancel</button>
+          <button id="cycleSaveBtn" class="btn" type="button">Save cycle</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -910,11 +964,12 @@
       "https://www.googleapis.com/auth/spreadsheets"
     ].join(" ");
     const WORKBOOK_NAME = "Greylock Radio Kid Files";
-    const SHEETS = Object.freeze({ kids: "Kids", projects: "Projects", checkins: "Checkins" });
+    const SHEETS = Object.freeze({ kids: "Kids", projects: "Projects", checkins: "Checkins", rosters: "Rosters" });
     const HEADERS = Object.freeze({
       kids: ["Kid ID", "Name", "Division", "Side", "Created At", "Updated At", "Deleted At"],
       projects: ["Project ID", "Kid ID", "Kid Name", "Project", "Start Date", "End Date", "Notes", "Updated At", "Deleted At"],
-      checkins: ["Check ID", "Date", "Side", "Period", "Kid ID", "Kid Name", "Checked In At"]
+      checkins: ["Check ID", "Date", "Side", "Period", "Kid ID", "Kid Name", "Checked In At"],
+      rosters: ["Roster ID", "Start Date", "Side", "Period", "Kid ID", "Kid Name", "Updated At"]
     });
     // Period schedules. Junior side = shorter periods (7); Senior side = longer periods (5).
     const PERIODS = Object.freeze({
@@ -953,6 +1008,7 @@
       kids: [],
       projects: [],
       checkins: [],
+      rosters: [],
       binnedKids: [],
       binnedProjects: [],
       selectedKidId: "",
@@ -963,6 +1019,8 @@
       checkinSide: "Junior side",
       searchPeriod: 0,
       searchQuery: "",
+      cycleSide: "Junior side",
+      cycleEntries: {},
       expiryTimer: null,
       sessionExpired: false
     };
@@ -983,6 +1041,7 @@
         "calWindowLabel", "calTodayBtn", "calPrevWeekBtn", "calNextWeekBtn", "calGrid", "dayTitle", "dayWeek", "dayStats", "dayList",
         "periodSide", "dayPeriods", "dayCheckStatus",
         "searchModal", "searchModalClose", "searchModalTitle", "searchModalSub", "checkinSearchInput", "searchResults", "searchCount",
+        "enterCycleBtn", "cycleModal", "cycleSideSeg", "cycleDateInput", "cyclePeriods", "cycleStatus", "cycleSaveBtn",
         "statsWindowLabel", "statsSummary", "statsWeeks", "statsKids"
       ].forEach(function (id) { els[id] = $(id); });
     }
@@ -1145,7 +1204,9 @@
         if (els[id]) els[id].disabled = locked;
       });
       if (els.emptyBinBtn) els.emptyBinBtn.disabled = locked;
-      document.querySelectorAll("[data-save-project],[data-delete-project],[data-add-period],[data-checkin-kid],[data-uncheck],[data-bin-kid],[data-restore-kid],[data-destroy-kid],[data-restore-project],[data-destroy-project]").forEach(function (b) { b.disabled = locked; });
+      if (els.enterCycleBtn) els.enterCycleBtn.disabled = locked;
+      if (els.cycleSaveBtn) els.cycleSaveBtn.disabled = locked;
+      document.querySelectorAll("[data-save-project],[data-delete-project],[data-add-period],[data-checkin-kid],[data-uncheck],[data-bin-kid],[data-restore-kid],[data-destroy-kid],[data-restore-project],[data-destroy-project],[data-quick-checkin],[data-cycle-pick],[data-cycle-remove]").forEach(function (b) { b.disabled = locked; });
     }
     function enterExpired() {
       if (state.expiryTimer) { clearTimeout(state.expiryTimer); state.expiryTimer = null; }
@@ -1237,6 +1298,7 @@
         if (!state.kids._hasHeader) updates.push({ range: quoteSheetName(SHEETS.kids) + "!A1:G1", values: [HEADERS.kids] });
         if (!state.projects._hasHeader) updates.push({ range: quoteSheetName(SHEETS.projects) + "!A1:I1", values: [HEADERS.projects] });
         if (!state.checkins._hasHeader) updates.push({ range: quoteSheetName(SHEETS.checkins) + "!A1:G1", values: [HEADERS.checkins] });
+        if (!state.rosters._hasHeader) updates.push({ range: quoteSheetName(SHEETS.rosters) + "!A1:G1", values: [HEADERS.rosters] });
         if (!updates.length) return true;
         return fetchJson("https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) + "/values:batchUpdate", {
           method: "POST", headers: { "Content-Type": "application/json" },
@@ -1255,13 +1317,14 @@
     }
     function readAllSheets() {
       if (!state.spreadsheetId) return Promise.resolve();
-      const ranges = [quoteSheetName(SHEETS.kids) + "!A:G", quoteSheetName(SHEETS.projects) + "!A:I", quoteSheetName(SHEETS.checkins) + "!A:G"];
+      const ranges = [quoteSheetName(SHEETS.kids) + "!A:G", quoteSheetName(SHEETS.projects) + "!A:I", quoteSheetName(SHEETS.checkins) + "!A:G", quoteSheetName(SHEETS.rosters) + "!A:G"];
       return fetchJson("https://sheets.googleapis.com/v4/spreadsheets/" + encodeURIComponent(state.spreadsheetId) +
         "/values:batchGet?ranges=" + ranges.map(encodeURIComponent).join("&ranges=")).then(function (data) {
         const vr = data.valueRanges || [];
         const kids = normalizeRows((vr[0] && vr[0].values) || [], HEADERS.kids, hasLegacyKidHeader);
         const projects = normalizeRows((vr[1] && vr[1].values) || [], HEADERS.projects, hasLegacyProjectHeader);
         const checkins = normalizeRows((vr[2] && vr[2].values) || [], HEADERS.checkins);
+        const rosters = normalizeRows((vr[3] && vr[3].values) || [], HEADERS.rosters);
         const allKids = kids.rows.filter(function (r) { return r[0] || r[1]; }).map(rowToKid);
         const allProjects = projects.rows.filter(function (r) { return r[0] || r[1] || r[3]; }).map(rowToProject);
         state.kids = allKids.filter(function (k) { return !k.deletedAt; }).sort(sortKids);
@@ -1269,9 +1332,11 @@
         state.projects = allProjects.filter(function (p) { return !p.deletedAt; });
         state.binnedProjects = allProjects.filter(function (p) { return p.deletedAt; });
         state.checkins = checkins.rows.filter(function (r) { return (r[0] || r[4]) && r[1]; }).map(rowToCheckin);
+        state.rosters = rosters.rows.filter(function (r) { return (r[0] || r[4]) && r[1]; }).map(rowToRoster);
         state.kids._hasHeader = hasKnownHeader(((vr[0] && vr[0].values) || [])[0] || [], HEADERS.kids);
         state.projects._hasHeader = hasKnownHeader(((vr[1] && vr[1].values) || [])[0] || [], HEADERS.projects);
         state.checkins._hasHeader = hasKnownHeader(((vr[2] && vr[2].values) || [])[0] || [], HEADERS.checkins);
+        state.rosters._hasHeader = hasKnownHeader(((vr[3] && vr[3].values) || [])[0] || [], HEADERS.rosters);
       });
     }
     function rowToKid(r) {
@@ -1286,6 +1351,10 @@
       return { id: r[0] || makeId("chk", r[5]), date: (r[1] || "").slice(0, 10), side: r[2] || "", period: Number(r[3]) || 0, kidId: r[4] || "", kidName: r[5] || "", updatedAt: r[6] || "" };
     }
     function checkinToRow(c) { return [c.id, c.date, c.side, String(c.period), c.kidId, c.kidName, c.updatedAt]; }
+    function rowToRoster(r) {
+      return { id: r[0] || makeId("cyc", r[5]), startDate: (r[1] || "").slice(0, 10), side: r[2] || "", period: Number(r[3]) || 0, kidId: r[4] || "", kidName: r[5] || "", updatedAt: r[6] || "" };
+    }
+    function rosterToRow(r) { return [r.id, r.startDate, r.side, String(r.period), r.kidId, r.kidName, r.updatedAt]; }
     function sortKids(a, b) { return String(a.name || "").localeCompare(String(b.name || "")); }
     function rewriteSheet(sheetName, headers, rows, cols) {
       const range = quoteSheetName(sheetName) + "!A:" + cols;
@@ -1298,6 +1367,7 @@
     function persistKids() { return rewriteSheet(SHEETS.kids, HEADERS.kids, state.kids.concat(state.binnedKids).map(kidToRow), "G"); }
     function persistProjects() { return rewriteSheet(SHEETS.projects, HEADERS.projects, state.projects.concat(state.binnedProjects).map(projectToRow), "I"); }
     function persistCheckins() { return rewriteSheet(SHEETS.checkins, HEADERS.checkins, state.checkins.map(checkinToRow), "G"); }
+    function persistRosters() { return rewriteSheet(SHEETS.rosters, HEADERS.rosters, state.rosters.map(rosterToRow), "G"); }
     function selectedKid() { return state.kids.find(function (kid) { return kid.id === state.selectedKidId; }) || null; }
     function projectsForKid(kidId) {
       return state.projects.filter(function (p) { return p.kidId === kidId; })
@@ -1372,20 +1442,23 @@
           '.<br><br><button class="btn tonal" type="button" data-create-from-empty>Create new file</button></div>';
         return;
       }
+      const lastSeen = {};
+      liveCheckins().forEach(function (c) {
+        if (!lastSeen[c.kidId] || c.date > lastSeen[c.kidId]) lastSeen[c.kidId] = c.date;
+      });
       els.kidList.innerHTML = kids.map(function (kid) {
         const count = projectsForKid(kid.id).length;
-        const last = liveCheckins().filter(function (c) { return c.kidId === kid.id; })
-          .sort(function (a, b) { return String(b.date || "").localeCompare(String(a.date || "")); })[0];
+        const bits = [];
+        if (kid.division) bits.push(escapeHtml(kid.division));
+        if (kid.side) bits.push(escapeHtml(kid.side.replace(" side", "")));
+        if (count) bits.push(count + (count === 1 ? " project" : " projects"));
+        if (lastSeen[kid.id]) bits.push("in " + escapeHtml(monthDay(parseISO(lastSeen[kid.id]))));
         return '<div class="swipe">' +
           '<div class="swipe-action"><button class="swipe-del" type="button" data-bin-kid="' + escapeHtml(kid.id) + '">Delete</button></div>' +
           '<button class="kid-card swipe-content ' + (kid.id === state.selectedKidId ? "active" : "") + '" type="button" data-select-kid="' + escapeHtml(kid.id) + '">' +
           '<strong>' + escapeHtml(kid.name || "Unnamed") + '</strong>' +
-          '<div class="kid-meta">' +
-          (kid.division ? '<span class="pill">' + escapeHtml(kid.division) + '</span>' : '') +
-          (kid.side ? '<span class="pill">' + escapeHtml(kid.side) + '</span>' : '') +
-          '<span>' + count + (count === 1 ? ' project' : ' projects') + '</span>' +
-          (last ? '<span class="pill red">Last ' + escapeHtml(monthDay(parseISO(last.date))) + '</span>' : '') +
-          '</div></button></div>';
+          '<div class="kid-meta">' + (bits.join(" · ") || "No details yet") + '</div>' +
+          '</button></div>';
       }).join("");
     }
     function renderSelectedKid() {
@@ -1434,12 +1507,13 @@
         kid.name = name; kid.division = els.divisionInput.value.trim(); kid.side = els.sideSelect.value; kid.updatedAt = now;
         state.projects.forEach(function (p) { if (p.kidId === kid.id) p.kidName = kid.name; });
         state.checkins.forEach(function (c) { if (c.kidId === kid.id) c.kidName = kid.name; });
+        state.rosters.forEach(function (r) { if (r.kidId === kid.id) r.kidName = kid.name; });
       } else {
         kid = { id: makeId("kid", name), name: name, division: els.divisionInput.value.trim(), side: els.sideSelect.value, createdAt: now, updatedAt: now };
         state.kids.push(kid); state.kids.sort(sortKids); state.selectedKidId = kid.id;
       }
       setBusy(true);
-      Promise.all([persistKids(), persistProjects(), persistCheckins()])
+      Promise.all([persistKids(), persistProjects(), persistCheckins(), persistRosters()])
         .then(function () { setStatus(els.fileStatus, "Kid file saved.", "good"); renderAll(); })
         .catch(function (err) { setStatus(els.fileStatus, messageFromError(err, "Could not save kid file."), "bad"); })
         .finally(function () { setBusy(false); });
@@ -1494,8 +1568,9 @@
       state.binnedKids = state.binnedKids.filter(function (k) { return k.id !== kid.id; });
       state.binnedProjects = state.binnedProjects.filter(function (p) { return p.kidId !== kid.id; });
       state.checkins = state.checkins.filter(function (c) { return c.kidId !== kid.id; });
+      state.rosters = state.rosters.filter(function (r) { return r.kidId !== kid.id; });
       setBusy(true);
-      Promise.all([persistKids(), persistProjects(), persistCheckins()])
+      Promise.all([persistKids(), persistProjects(), persistCheckins(), persistRosters()])
         .then(function () { renderBin(); })
         .catch(function (err) { setStatus(els.binStatus, messageFromError(err, "Could not delete permanently."), "bad"); })
         .finally(function () { setBusy(false); });
@@ -1559,8 +1634,9 @@
       state.binnedKids = [];
       state.binnedProjects = [];
       state.checkins = state.checkins.filter(function (c) { return goneKidIds.indexOf(c.kidId) === -1; });
+      state.rosters = state.rosters.filter(function (r) { return goneKidIds.indexOf(r.kidId) === -1; });
       setBusy(true);
-      Promise.all([persistKids(), persistProjects(), persistCheckins()])
+      Promise.all([persistKids(), persistProjects(), persistCheckins(), persistRosters()])
         .then(function () { renderBin(); })
         .catch(function (err) { setStatus(els.binStatus, messageFromError(err, "Could not empty the Bin."), "bad"); })
         .finally(function () { setBusy(false); });
@@ -1688,10 +1764,10 @@
       els.dayTitle.textContent = DOW_FULL[date.getDay()] + ", " + monthDayFull(date);
       const wIdx = weekIndexOfISO(iso);
       els.dayWeek.textContent = (wIdx >= 0 && wIdx < CAMP_WEEKS) ? "Camp week " + (wIdx + 1) : "Outside the camp window";
-      els.dayStats.innerHTML =
-        '<span class="pill solid">' + dayCheckins + ' check-ins</span>' +
-        '<span class="pill red">' + active.length + ' projects</span>' +
-        '<span class="pill">' + kidIds.length + ' kids</span>';
+      let expectedTotal = 0;
+      SIDES.forEach(function (s) { PERIODS[s].forEach(function (p) { expectedTotal += expectedKidsFor(iso, s, p.n).kids.length; }); });
+      els.dayStats.innerHTML = '<b>' + dayCheckins + '</b> checked in' + (expectedTotal ? ' · ' + expectedTotal + ' expected' : '') +
+        (active.length ? '<br>' + active.length + ' active project' + (active.length === 1 ? '' : 's') : '');
 
       renderPeriods();
 
@@ -1724,6 +1800,27 @@
       for (var i = 0; i < list.length; i++) { if (list[i].n === n) return list[i].time; }
       return "";
     }
+    /* ---------- Cycle rosters: who is expected in each period ---------- */
+    function rosterCycleStart(iso, side, period) {
+      let best = "";
+      state.rosters.forEach(function (r) {
+        if (r.side === side && r.period === period && r.startDate && r.startDate <= iso && r.startDate > best) best = r.startDate;
+      });
+      return best;
+    }
+    function expectedKidsFor(iso, side, period) {
+      const start = rosterCycleStart(iso, side, period);
+      if (!start) return { start: "", kids: [] };
+      const live = {}; state.kids.forEach(function (k) { live[k.id] = k; });
+      const seen = {}; const kids = [];
+      state.rosters.forEach(function (r) {
+        if (r.side === side && r.period === period && r.startDate === start && live[r.kidId] && !seen[r.kidId]) {
+          seen[r.kidId] = true; kids.push(live[r.kidId]);
+        }
+      });
+      kids.sort(sortKids);
+      return { start: start, kids: kids };
+    }
     function renderPeriods() {
       const iso = state.selectedDate;
       const side = state.checkinSide;
@@ -1731,21 +1828,40 @@
       els.periodSide.innerHTML = SIDES.map(function (s) {
         const total = shown.filter(function (c) { return c.date === iso && c.side === s; }).length;
         return '<button type="button" class="seg-btn ' + (s === side ? "active" : "") + '" data-side="' + escapeHtml(s) + '">' +
-          escapeHtml(s.replace(" side", "")) + ' <small>' + PERIODS[s].length + ' periods · ' + total + '</small></button>';
+          escapeHtml(s.replace(" side", "")) + (total ? ' <small>' + total + ' in</small>' : '') + '</button>';
       }).join("");
 
+      const check = '<svg viewBox="0 0 24 24"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>';
       els.dayPeriods.innerHTML = PERIODS[side].map(function (p) {
         const here = shown.filter(function (c) { return c.date === iso && c.side === side && c.period === p.n; });
-        const chips = here.length ? here.map(function (c) {
-          return '<span class="chk-chip">' + escapeHtml(c.kidName || "Unknown") +
-            '<button type="button" class="chk-x" data-uncheck="' + escapeHtml(c.id) + '" title="Remove" aria-label="Remove">&times;</button></span>';
-        }).join("") : '<span class="period-empty">No one checked in yet</span>';
+        const hereByKid = {}; here.forEach(function (c) { hereByKid[c.kidId] = c; });
+        const exp = expectedKidsFor(iso, side, p.n);
+        let chips = "";
+        exp.kids.forEach(function (k) {
+          const c = hereByKid[k.id];
+          if (c) {
+            chips += '<button class="p-chip here" type="button" data-uncheck="' + escapeHtml(c.id) + '" title="Checked in — tap to remove">' + check + escapeHtml(k.name || "Unnamed") + '</button>';
+            delete hereByKid[k.id];
+          } else {
+            chips += '<button class="p-chip due" type="button" data-quick-checkin="' + escapeHtml(k.id) + '" data-quick-period="' + p.n + '" title="Expected — tap to check in">' + escapeHtml(k.name || "Unnamed") + '</button>';
+          }
+        });
+        Object.keys(hereByKid).forEach(function (kidId) {
+          const c = hereByKid[kidId];
+          chips += '<button class="p-chip here extra" type="button" data-uncheck="' + escapeHtml(c.id) + '" title="Walk-in — tap to remove">' + check + escapeHtml(c.kidName || "Unknown") + '</button>';
+        });
+        if (!chips) chips = '<span class="period-empty">' + (exp.start ? "No one here yet" : "No cycle sheet for this period") + '</span>';
+        const count = exp.kids.length
+          ? '<b>' + here.length + '</b> / ' + exp.kids.length
+          : (here.length ? '<b>' + here.length + '</b> in' : '');
+        const cycleNote = exp.start ? '<div class="period-cycle">Cycle from ' + escapeHtml(monthDay(parseISO(exp.start))) + '</div>' : '';
         return '<div class="period">' +
-          '<div class="period-head"><div class="period-id"><span class="period-n">Period ' + p.n + '</span><span class="period-time">' + escapeHtml(p.time) + '</span></div>' +
-          '<span class="period-count' + (here.length ? " on" : "") + '">' + here.length + '</span></div>' +
-          '<div class="period-kids">' + chips + '</div>' +
-          '<button class="period-add" type="button" data-add-period="' + p.n + '">' +
-          '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg> Add kids</button>' +
+          '<div class="period-head"><span class="period-n">' + p.n + '</span><span class="period-time">' + escapeHtml(p.time) + '</span>' +
+          '<span class="period-count">' + count + '</span></div>' +
+          '<div class="period-kids">' + chips +
+          '<button class="p-add" type="button" data-add-period="' + p.n + '" title="Add another kid" aria-label="Add kid to period ' + p.n + '">' +
+          '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></button>' +
+          '</div>' + cycleNote +
           '</div>';
       }).join("");
       if (state.sessionExpired) lockWrites(true);
@@ -1810,6 +1926,120 @@
       persistCheckins().then(function () {
         setStatus(els.dayCheckStatus, "Removed " + (c.kidName || "kid") + " from Period " + c.period + ".", "good"); renderDay();
       }).catch(function (err) { setStatus(els.dayCheckStatus, messageFromError(err, "Could not remove check-in."), "bad"); })
+        .finally(function () { setBusy(false); });
+    }
+
+    /* ---------- Cycle sheet entry ---------- */
+    function openCycleModal() {
+      if (state.sessionExpired) return;
+      state.cycleSide = state.checkinSide;
+      state.cycleEntries = {};
+      els.cycleDateInput.value = state.selectedDate || defaultDate();
+      setStatus(els.cycleStatus, "");
+      els.cycleModal.classList.remove("hidden");
+      renderCycleModal();
+    }
+    function closeCycleModal() { els.cycleModal.classList.add("hidden"); }
+    function cycleEntriesFor(period) { return state.cycleEntries[period] = state.cycleEntries[period] || []; }
+    function renderCycleModal(focusPeriod) {
+      els.cycleSideSeg.innerHTML = SIDES.map(function (s) {
+        return '<button type="button" class="seg-btn ' + (s === state.cycleSide ? "active" : "") + '" data-cycle-side="' + escapeHtml(s) + '">' + escapeHtml(s.replace(" side", "")) + '</button>';
+      }).join("");
+      els.cyclePeriods.innerHTML = PERIODS[state.cycleSide].map(function (p) {
+        const entries = cycleEntriesFor(p.n);
+        const chips = entries.map(function (e, i) {
+          return '<span class="cyc-chip' + (e.kidId ? "" : " new") + '">' + escapeHtml(e.name) +
+            '<button type="button" class="chk-x" data-cycle-remove="' + p.n + ':' + i + '" aria-label="Remove ' + escapeHtml(e.name) + '">&times;</button></span>';
+        }).join("");
+        return '<div class="cyc-row">' +
+          '<div class="cyc-row-head"><strong>Period ' + p.n + '</strong><span>' + escapeHtml(p.time) + '</span></div>' +
+          '<div class="cyc-chips">' + chips + '</div>' +
+          '<div class="cyc-input">' +
+          '<input type="text" placeholder="Type a name…" autocomplete="off" data-cycle-input="' + p.n + '">' +
+          '<div class="cyc-suggest" data-cycle-suggest-box="' + p.n + '"></div>' +
+          '</div></div>';
+      }).join("");
+      if (focusPeriod) {
+        const input = els.cyclePeriods.querySelector('[data-cycle-input="' + focusPeriod + '"]');
+        if (input) input.focus();
+      }
+    }
+    function renderCycleSuggest(period, query) {
+      const box = els.cyclePeriods.querySelector('[data-cycle-suggest-box="' + period + '"]');
+      if (!box) return;
+      const q = String(query || "").trim().toLowerCase();
+      if (!q) { box.innerHTML = ""; return; }
+      const taken = {};
+      cycleEntriesFor(period).forEach(function (e) { taken[e.kidId || ("name:" + e.name.toLowerCase())] = true; });
+      const matches = state.kids.filter(function (k) {
+        if (k.side && k.side !== state.cycleSide) return false;
+        if (taken[k.id] || taken["name:" + (k.name || "").toLowerCase()]) return false;
+        return (k.name || "").toLowerCase().indexOf(q) !== -1;
+      }).slice(0, 6);
+      let html = matches.map(function (k) {
+        return '<button type="button" data-cycle-pick="' + period + '" data-kid="' + escapeHtml(k.id) + '">' + escapeHtml(k.name) +
+          '<small>' + escapeHtml([k.division, k.side].filter(Boolean).join(" · ")) + '</small></button>';
+      }).join("");
+      const exact = state.kids.some(function (k) { return (k.name || "").trim().toLowerCase() === q; });
+      if (!exact) {
+        html += '<button type="button" class="create" data-cycle-pick="' + period + '" data-new-name="' + escapeHtml(String(query).trim()) + '">Add &ldquo;' + escapeHtml(String(query).trim()) + '&rdquo; as a new kid</button>';
+      }
+      box.innerHTML = html;
+    }
+    function pickCycleEntry(period, kidId, newName) {
+      const entries = cycleEntriesFor(period);
+      if (kidId) {
+        const kid = state.kids.find(function (k) { return k.id === kidId; });
+        if (!kid || entries.some(function (e) { return e.kidId === kidId; })) return;
+        entries.push({ kidId: kid.id, name: kid.name });
+      } else {
+        const name = String(newName || "").trim();
+        if (!name || entries.some(function (e) { return e.name.toLowerCase() === name.toLowerCase(); })) return;
+        entries.push({ kidId: "", name: name });
+      }
+      renderCycleModal(period);
+    }
+    function saveCycle() {
+      const startDate = (els.cycleDateInput.value || "").slice(0, 10);
+      if (!startDate) { setStatus(els.cycleStatus, "Pick the starting date printed on the sheet.", "warn"); return; }
+      const side = state.cycleSide;
+      const periods = PERIODS[side].map(function (p) { return p.n; });
+      let totalEntries = 0;
+      periods.forEach(function (n) { totalEntries += cycleEntriesFor(n).length; });
+      if (!totalEntries) { setStatus(els.cycleStatus, "Add at least one kid to a period.", "warn"); return; }
+      const now = new Date().toISOString();
+      // New names become kid files automatically (matched to existing kids case-insensitively).
+      const byName = {};
+      state.kids.forEach(function (k) { byName[(k.name || "").trim().toLowerCase()] = k; });
+      const newKids = [];
+      periods.forEach(function (n) {
+        cycleEntriesFor(n).forEach(function (e) {
+          if (e.kidId) return;
+          const key = e.name.trim().toLowerCase();
+          let kid = byName[key];
+          if (!kid) {
+            kid = { id: makeId("kid", e.name), name: e.name.trim(), division: "", side: side, createdAt: now, updatedAt: now, deletedAt: "" };
+            byName[key] = kid; newKids.push(kid);
+          }
+          e.kidId = kid.id; e.name = kid.name;
+        });
+      });
+      if (newKids.length) { state.kids = state.kids.concat(newKids); state.kids.sort(sortKids); }
+      // Re-entering a sheet with the same side + start date replaces it.
+      state.rosters = state.rosters.filter(function (r) { return !(r.side === side && r.startDate === startDate); });
+      periods.forEach(function (n) {
+        cycleEntriesFor(n).forEach(function (e) {
+          state.rosters.push({ id: makeId("cyc", e.name), startDate: startDate, side: side, period: n, kidId: e.kidId, kidName: e.name, updatedAt: now });
+        });
+      });
+      setBusy(true);
+      const writes = [persistRosters()];
+      if (newKids.length) writes.push(persistKids());
+      Promise.all(writes).then(function () {
+        closeCycleModal();
+        setStatus(els.dayCheckStatus, "Cycle sheet saved" + (newKids.length ? " — " + newKids.length + " new kid file" + (newKids.length === 1 ? "" : "s") + " created" : "") + ".", "good");
+        renderAll();
+      }).catch(function (err) { setStatus(els.cycleStatus, messageFromError(err, "Could not save the cycle sheet."), "bad"); })
         .finally(function () { setBusy(false); });
     }
 
@@ -2201,6 +2431,7 @@
       clearExpired();
       state.accessToken = ""; state.accessTokenExpiresAt = 0; state.spreadsheetId = "";
       state.currentUser = null; state.kids = []; state.projects = []; state.checkins = [];
+      state.rosters = []; state.cycleEntries = {};
       state.binnedKids = []; state.binnedProjects = []; state.selectedKidId = "";
       els.filesView.classList.add("hidden"); els.statsView.classList.add("hidden"); els.binView.classList.add("hidden");
       els.loginView.classList.remove("hidden");
@@ -2228,6 +2459,8 @@
       document.addEventListener("pointerup", onSwipeUp);
       document.addEventListener("pointercancel", onSwipeUp);
       els.calTodayBtn.addEventListener("click", function () { state.selectedDate = defaultDate(); showWorkbench(); });
+      els.enterCycleBtn.addEventListener("click", openCycleModal);
+      els.cycleSaveBtn.addEventListener("click", saveCycle);
       els.calPrevWeekBtn.addEventListener("click", function () { state.selectedDate = toISO(addDays(parseISO(state.selectedDate || defaultDate()), -7)); renderCalendar(); });
       els.calNextWeekBtn.addEventListener("click", function () { state.selectedDate = toISO(addDays(parseISO(state.selectedDate || defaultDate()), 7)); renderCalendar(); });
       els.kidSearchInput.addEventListener("input", renderKids);
@@ -2261,8 +2494,33 @@
         if (calDay) { state.selectedDate = calDay.dataset.calDay; renderCalendar(); return; }
         const sideBtn = event.target.closest("[data-side]");
         if (sideBtn) { state.checkinSide = sideBtn.dataset.side; renderPeriods(); return; }
+        const quick = event.target.closest("[data-quick-checkin]");
+        if (quick) { addCheckin(Number(quick.dataset.quickPeriod), quick.dataset.quickCheckin); return; }
         const uncheck = event.target.closest("[data-uncheck]");
         if (uncheck) { removeCheckin(uncheck.dataset.uncheck); return; }
+        const closeCycle = event.target.closest("[data-close-cycle]");
+        if (closeCycle) { closeCycleModal(); return; }
+        const cycleSide = event.target.closest("[data-cycle-side]");
+        if (cycleSide) {
+          const next = cycleSide.dataset.cycleSide;
+          if (next !== state.cycleSide) {
+            const hasEntries = Object.keys(state.cycleEntries).some(function (k) { return state.cycleEntries[k].length; });
+            if (hasEntries && !confirm("Switching side clears what you typed. Continue?")) return;
+            state.cycleSide = next; state.cycleEntries = {};
+            renderCycleModal();
+          }
+          return;
+        }
+        const cyclePick = event.target.closest("[data-cycle-pick]");
+        if (cyclePick) { pickCycleEntry(Number(cyclePick.dataset.cyclePick), cyclePick.dataset.kid || "", cyclePick.dataset.newName || ""); return; }
+        const cycleRemove = event.target.closest("[data-cycle-remove]");
+        if (cycleRemove) {
+          const parts = String(cycleRemove.dataset.cycleRemove).split(":");
+          const list = cycleEntriesFor(Number(parts[0]));
+          list.splice(Number(parts[1]), 1);
+          renderCycleModal(Number(parts[0]));
+          return;
+        }
         const closeSearch = event.target.closest("[data-close-search]");
         if (closeSearch) { closeCheckinSearch(); return; }
         const addPeriod = event.target.closest("[data-add-period]");
@@ -2281,9 +2539,26 @@
         if (saveProjectBtn) saveProject(saveProjectBtn.dataset.saveProject);
       });
       els.checkinSearchInput.addEventListener("input", function () { state.searchQuery = els.checkinSearchInput.value; renderSearchResults(); });
+      document.addEventListener("input", function (event) {
+        const t = event.target;
+        if (t && t.matches && t.matches("[data-cycle-input]")) renderCycleSuggest(Number(t.dataset.cycleInput), t.value);
+      });
       document.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          const cycleInput = event.target && event.target.closest && event.target.closest("[data-cycle-input]");
+          if (cycleInput) {
+            event.preventDefault();
+            const period = Number(cycleInput.dataset.cycleInput);
+            const box = els.cyclePeriods.querySelector('[data-cycle-suggest-box="' + period + '"]');
+            const first = box && box.querySelector("[data-cycle-pick]");
+            if (first) first.click();
+            else if (cycleInput.value.trim()) pickCycleEntry(period, "", cycleInput.value);
+            return;
+          }
+        }
         if (event.key !== "Escape") return;
-        if (!els.searchModal.classList.contains("hidden")) closeCheckinSearch();
+        if (!els.cycleModal.classList.contains("hidden")) closeCycleModal();
+        else if (!els.searchModal.classList.contains("hidden")) closeCheckinSearch();
         else if (els.kidDrawer.classList.contains("open")) closeKidDrawer();
       });
     }
