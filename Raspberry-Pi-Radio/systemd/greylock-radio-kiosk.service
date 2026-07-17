@@ -1,0 +1,23 @@
+[Unit]
+Description=Greylock Radio local touchscreen
+After=greylock-radio.service network-online.target
+Requires=greylock-radio.service
+Conflicts=getty@tty7.service
+
+[Service]
+Type=simple
+User=greylock-radio
+Group=greylock-radio
+SupplementaryGroups=audio video render input
+Environment=HOME=/var/lib/greylock-radio
+WorkingDirectory=/var/lib/greylock-radio
+ExecStart=/usr/bin/xinit /opt/greylock-radio/scripts/kiosk-session.sh -- :0 -nolisten tcp vt7
+Restart=on-failure
+RestartSec=5
+TTYPath=/dev/tty7
+StandardInput=tty
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=graphical.target

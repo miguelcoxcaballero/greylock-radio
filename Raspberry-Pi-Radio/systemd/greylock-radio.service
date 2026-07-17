@@ -1,0 +1,25 @@
+[Unit]
+Description=Greylock automatic radio
+After=network-online.target sound.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=greylock-radio
+Group=greylock-radio
+SupplementaryGroups=audio
+WorkingDirectory=/opt/greylock-radio
+Environment=HOME=/var/lib/greylock-radio
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/python3 /opt/greylock-radio/app/radio.py --config /etc/greylock-radio/config.json
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/etc/greylock-radio /srv/greylock-radio /var/lib/greylock-radio
+UMask=0027
+
+[Install]
+WantedBy=multi-user.target

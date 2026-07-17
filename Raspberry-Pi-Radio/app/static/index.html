@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#c92f29">
+  <title>Greylock Automatic Radio</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-name">GREYLOCK</span>
+      <span class="brand-tag">RADIO</span>
+    </div>
+    <div class="connection"><i id="connectionDot"></i><span id="connectionText">Connecting</span></div>
+  </header>
+
+  <main>
+    <section class="on-air">
+      <div class="eyebrow" id="modeLabel">OFF AIR</div>
+      <div class="on-air-row">
+        <div class="track-copy">
+          <h1 id="trackName">Radio stopped</h1>
+          <p id="trackFile">Press Start radio when the audio system is ready.</p>
+        </div>
+        <div class="transport" aria-label="Radio controls">
+          <button class="icon-command" id="startBtn" type="button" title="Start radio" aria-label="Start radio">&#9654;</button>
+          <button class="icon-command" id="pauseBtn" type="button" title="Pause" aria-label="Pause">&#8545;</button>
+          <button class="icon-command" id="nextBtn" type="button" title="Next track" aria-label="Next track">&#9654;|</button>
+          <button class="text-command" id="stopBtn" type="button">Stop</button>
+        </div>
+      </div>
+      <div class="progress-line"><span id="progressPulse"></span></div>
+      <div class="summary" id="summary">No library loaded</div>
+      <div class="error hidden" id="errorBox"></div>
+    </section>
+
+    <section class="live-strip" id="liveStrip">
+      <div>
+        <span class="live-dot"></span>
+        <strong>Live microphone</strong>
+        <span>Uses the microphone connected directly to this Raspberry Pi.</span>
+      </div>
+      <button class="live-command" id="liveBtn" type="button">Start live announcement</button>
+    </section>
+
+    <div class="workspace">
+      <section class="panel library-panel">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">MUSIC ROTATION</span>
+            <h2>Music folders</h2>
+          </div>
+          <button class="quiet-command" id="rescanBtn" type="button">Rescan</button>
+        </div>
+        <p class="section-note">The station takes one song from each folder in turn, then starts again.</p>
+        <div id="folderList" class="folder-list"></div>
+      </section>
+
+      <section class="panel announcements-panel">
+        <div class="section-head">
+          <div>
+            <span class="eyebrow">PRIORITY AUDIO</span>
+            <h2>Recorded announcements</h2>
+          </div>
+          <span class="count" id="announcementCount">0</span>
+        </div>
+        <p class="section-note">Playing one now interrupts the current song and continues the rotation afterward.</p>
+        <div id="announcementList" class="announcement-list"></div>
+      </section>
+    </div>
+
+    <details class="settings">
+      <summary>Station settings</summary>
+      <form id="settingsForm">
+        <div class="settings-grid">
+          <label>
+            <span>Station name</span>
+            <input id="stationName" name="station_name" autocomplete="off">
+          </label>
+          <label>
+            <span>Announcement every</span>
+            <div class="suffix-field"><input id="announcementEvery" name="announcement_every_songs" type="number" min="0" max="100"><em>songs</em></div>
+          </label>
+          <label>
+            <span>Music volume</span>
+            <div class="suffix-field"><input id="musicVolume" name="music_volume" type="number" min="0" max="130"><em>%</em></div>
+          </label>
+          <label>
+            <span>Announcement volume</span>
+            <div class="suffix-field"><input id="announcementVolume" name="announcement_volume" type="number" min="0" max="130"><em>%</em></div>
+          </label>
+          <label>
+            <span>mpv output</span>
+            <input id="mpvDevice" name="mpv_audio_device" placeholder="auto">
+          </label>
+          <label>
+            <span>Live microphone input</span>
+            <input id="captureDevice" name="alsa_capture_device" placeholder="default">
+          </label>
+          <label>
+            <span>Live speaker output</span>
+            <input id="playbackDevice" name="alsa_playback_device" placeholder="default">
+          </label>
+        </div>
+        <div class="form-actions">
+          <span id="settingsStatus"></span>
+          <button class="primary-command" type="submit">Save settings</button>
+        </div>
+      </form>
+    </details>
+  </main>
+
+  <template id="emptyTemplate">
+    <div class="empty-state"></div>
+  </template>
+  <script src="/app.js" defer></script>
+</body>
+</html>

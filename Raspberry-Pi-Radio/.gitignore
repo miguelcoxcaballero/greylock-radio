@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+config/config.json
+*.tar.gz
+.test/
+downloads/
+prepare-sd.log
+
+# Keep the sample folders small; real audio lives on the Raspberry Pi.
+media/music/*
+!media/music/README.txt
+media/announcements/*
+!media/announcements/README.txt

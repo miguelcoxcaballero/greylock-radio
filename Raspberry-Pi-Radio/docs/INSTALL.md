@@ -1,0 +1,85 @@
+# Instalacion en Raspberry Pi 3B+
+
+## Sistema base
+
+Usa **Raspberry Pi OS Legacy Lite, 32-bit (Bookworm)**. La version Lite elimina
+el escritorio que no necesitamos y la arquitectura de 32 bits consume menos
+memoria en una Pi 3B+ de 1 GB. El instalador del proyecto agrega solamente X,
+Openbox y Chromium para mostrar el panel.
+
+Pagina oficial del sistema:
+https://www.raspberrypi.com/software/operating-systems/
+
+## Preparar una tarjeta desde Windows
+
+El aprovisionador incluido borra una microSD, graba la imagen, conserva el
+overlay `tft35a`, copia la aplicacion y deja preparado el primer arranque. La
+imagen usada para esta unidad es:
+
+```text
+2026-06-18-raspios-bookworm-armhf-lite.img.xz
+SHA-256: 8a044f4c55feb9b0626ab2060a2eef15c3f57327dd610a0a4cac02cdb959166e
+```
+
+Ejecuta PowerShell como administrador y comprueba siempre el numero de disco:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\prepare-sd.ps1 `
+  -ImagePath downloads\2026-06-18-raspios-bookworm-armhf-lite.img.xz `
+  -DiskNumber 2 -DriveLetter E -Force
+```
+
+El script solo admite unidades USB de 8 a 64 GB y verifica el hash antes de
+borrar nada. Preconfigura la red Wi-Fi a la que esta conectado Windows, si puede
+leer su perfil, y guarda las credenciales nuevas en el escritorio del usuario.
+
+## Preparacion manual
+
+1. Graba Raspberry Pi OS Legacy Lite 32-bit con Raspberry Pi Imager.
+2. En la personalizacion usa:
+   - Hostname: `greylock-radio`
+   - Zona horaria: `America/New_York`
+   - Usuario: el que vaya a administrar la Pi
+   - SSH: activado
+   - Wi-Fi: una red de 2,4 GHz accesible en el lugar de uso
+3. Arranca la Pi y entra por SSH.
+4. Copia esta carpeta a la Pi.
+5. Ejecuta:
+
+```bash
+cd Raspberry-Pi-Radio
+sudo bash scripts/install.sh
+sudo bash scripts/install-kiosk.sh
+sudo reboot
+```
+
+El instalador puede ejecutarse de nuevo para actualizar el programa. Conserva
+`/etc/greylock-radio/config.json` y todo lo que haya en
+`/srv/greylock-radio/media`.
+
+## TFT GPIO de esta unidad
+
+La tarjeta original identifico la pantalla como:
+
+```text
+Controlador de video: ILI9486
+Controlador tactil: ADS7846
+Overlay: tft35a
+Resolucion: 800x533
+Rotacion: 270 grados
+Framebuffer de X: /dev/fb1
+```
+
+El aprovisionador conserva `hardware/tft35a.dtbo`, activa SPI e I2C, configura
+Xorg para el framebuffer secundario y aplica la matriz tactil correspondiente.
+No uses esta configuracion con otro modelo de pantalla sin cambiar el overlay.
+
+## Primer arranque
+
+El primer arranque instala paquetes desde los repositorios de Raspberry Pi OS.
+No cortes la corriente aunque la pantalla permanezca en consola. El proceso
+guarda su progreso en `/boot/firmware/greylock-firstboot.log`, elimina la
+configuracion temporal de Wi-Fi y se reinicia cuando termina.
+
+Si la TFT no abre el panel despues de 25 minutos, conecta HDMI o entra por SSH y
+consulta [OPERATIONS.md](OPERATIONS.md).

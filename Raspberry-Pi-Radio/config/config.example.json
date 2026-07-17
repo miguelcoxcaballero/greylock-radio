@@ -1,0 +1,19 @@
+{
+  "station_name": "Greylock Radio",
+  "host": "0.0.0.0",
+  "port": 8080,
+  "media_root": "/srv/greylock-radio/media",
+  "music_directory": "music",
+  "announcements_directory": "announcements",
+  "autostart": true,
+  "shuffle_within_folders": true,
+  "announcement_every_songs": 4,
+  "music_volume": 82,
+  "announcement_volume": 92,
+  "mpv_audio_device": "auto",
+  "alsa_capture_device": "default",
+  "alsa_playback_device": "default",
+  "live_sample_rate": 48000,
+  "live_channels": 1,
+  "scheduled_announcements": []
+}
