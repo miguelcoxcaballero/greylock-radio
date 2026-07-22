@@ -52,19 +52,6 @@ if ($sshPublicKey -notmatch '^ssh-(ed25519|rsa)\s+[A-Za-z0-9+/=]+(?:\s+.*)?$') {
   throw "The SSH public key does not have a supported OpenSSH format."
 }
 
-$wifiSsid = ""
-$wifiPassword = ""
-$interfaceText = (netsh wlan show interfaces | Out-String)
-$ssidMatch = [regex]::Match($interfaceText, '(?m)^\s*SSID\s*:\s*(.+?)\s*$')
-if ($ssidMatch.Success) {
-  $wifiSsid = $ssidMatch.Groups[1].Value.Trim()
-  $profileText = (netsh wlan show profile name="$wifiSsid" key=clear | Out-String)
-  $keyMatch = [regex]::Match($profileText, '(?m)^\s*Key Content\s*:\s*(.+?)\s*$')
-  if ($keyMatch.Success) {
-    $wifiPassword = $keyMatch.Groups[1].Value.Trim()
-  }
-}
-
 $openssl = "C:\Program Files\Git\usr\bin\openssl.exe"
 if (-not (Test-Path -LiteralPath $openssl)) {
   throw "OpenSSL was not found at $openssl."
@@ -120,21 +107,14 @@ $config = Get-Content -LiteralPath $configPath -Raw
 $config = [regex]::Replace($config, '(?m)^(dtoverlay=vc4-kms-v3d.*)$', '#$1')
 $displayBlock = @'
 
-# BEGIN GREYLOCK TFT
+# BEGIN GREYLOCK HEADLESS
 [all]
+dtoverlay=disable-wifi
 dtparam=spi=on
 dtparam=i2c_arm=on
 enable_uart=1
-dtoverlay=tft35a:rotate=90
-hdmi_force_hotplug=1
-hdmi_group=2
-hdmi_mode=1
-hdmi_mode=87
-hdmi_cvt=480 320 60 6 0 0 0
-hdmi_drive=2
-gpu_mem=64
 disable_splash=1
-# END GREYLOCK TFT
+# END GREYLOCK HEADLESS
 '@
 $config = $config.TrimEnd() + $displayBlock + "`n"
 Set-Content -LiteralPath $configPath -Value $config -Encoding ascii -NoNewline
@@ -145,8 +125,6 @@ function ConvertTo-Base64([string]$Value) {
 
 $firstRunTemplate = Get-Content -LiteralPath (Join-Path $ProjectRoot "scripts\firstrun.template.sh") -Raw
 $firstRun = $firstRunTemplate.Replace('__PASSWORD_HASH_B64__', (ConvertTo-Base64 $passwordHash))
-$firstRun = $firstRun.Replace('__WIFI_SSID_B64__', (ConvertTo-Base64 $wifiSsid))
-$firstRun = $firstRun.Replace('__WIFI_PASSWORD_B64__', (ConvertTo-Base64 $wifiPassword))
 $firstRun = $firstRun.Replace('__SSH_PUBLIC_KEY_B64__', (ConvertTo-Base64 $sshPublicKey))
 $utf8NoBom = New-Object Text.UTF8Encoding($false)
 [IO.File]::WriteAllText((Join-Path $bootRoot "firstrun.sh"), $firstRun, $utf8NoBom)
@@ -154,14 +132,13 @@ $utf8NoBom = New-Object Text.UTF8Encoding($false)
 $cmdlinePath = Join-Path $bootRoot "cmdline.txt"
 $cmdline = (Get-Content -LiteralPath $cmdlinePath -Raw).Trim() -replace '(?:^|\s)quiet(?=\s|$)', ''
 $cmdline = ($cmdline -replace '\s+', ' ').Trim()
-$cmdline += " fbcon=map:10 fbcon=font:ProFont6x11 systemd.run=/boot/firmware/firstrun.sh systemd.run_success_action=reboot systemd.unit=kernel-command-line.target"
+$cmdline += " systemd.run=/boot/firmware/firstrun.sh systemd.run_success_action=reboot systemd.unit=kernel-command-line.target"
 Set-Content -LiteralPath $cmdlinePath -Value ($cmdline + "`n") -Encoding ascii -NoNewline
 
 New-Item -ItemType File -Path (Join-Path $bootRoot "ssh") -Force | Out-Null
 [IO.File]::WriteAllText((Join-Path $bootRoot "userconf.txt"), "radio:$passwordHash`n", $utf8NoBom)
 
 $credentialsPath = Join-Path ([Environment]::GetFolderPath('Desktop')) "Greylock-Radio-Credentials.txt"
-$wifiDescription = if ($wifiSsid) { $wifiSsid } else { "not configured; use Ethernet on first boot" }
 $credentials = @"
 Greylock Radio Raspberry Pi
 Username: radio
@@ -169,7 +146,9 @@ Password: $adminPassword
 Web: http://greylock-radio.local:8080
 SSH: ssh radio@greylock-radio.local
 SSH key: $SshPublicKeyPath
-Wi-Fi: $wifiDescription
+Ethernet DHCP: connect the Pi to the router
+Direct Ethernet: 192.168.137.2
+Wi-Fi: disabled
 "@
 [IO.File]::WriteAllText($credentialsPath, $credentials, $utf8NoBom)
 

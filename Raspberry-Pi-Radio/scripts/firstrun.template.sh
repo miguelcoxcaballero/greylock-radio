@@ -13,9 +13,46 @@ echo "=== Greylock Radio first boot: $(date -Is) ==="
 HOSTNAME_VALUE=greylock-radio
 ADMIN_USER=radio
 PASSWORD_HASH="$(printf '%s' '__PASSWORD_HASH_B64__' | base64 -d)"
-WIFI_SSID="$(printf '%s' '__WIFI_SSID_B64__' | base64 -d)"
-WIFI_PASSWORD="$(printf '%s' '__WIFI_PASSWORD_B64__' | base64 -d)"
 SSH_PUBLIC_KEY="$(printf '%s' '__SSH_PUBLIC_KEY_B64__' | base64 -d)"
+
+cat >/usr/local/sbin/greylock-direct-network <<'EOF'
+#!/bin/sh
+set -eu
+ip link set eth0 up
+ip address replace 192.168.137.2/24 dev eth0
+EOF
+chmod 0755 /usr/local/sbin/greylock-direct-network
+
+cat >/etc/systemd/system/greylock-direct-network.service <<'EOF'
+[Unit]
+Description=Greylock Radio direct Ethernet address
+After=NetworkManager.service systemd-networkd.service
+Before=ssh.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/greylock-direct-network
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+install -d -m 0755 /etc/NetworkManager/dispatcher.d
+cat >/etc/NetworkManager/dispatcher.d/90-greylock-direct <<'EOF'
+#!/bin/sh
+if [ "${1:-}" = "eth0" ] && { [ "${2:-}" = "up" ] || [ "${2:-}" = "dhcp4-change" ]; }; then
+  /usr/local/sbin/greylock-direct-network
+fi
+EOF
+chmod 0755 /etc/NetworkManager/dispatcher.d/90-greylock-direct
+
+/usr/local/sbin/greylock-direct-network
+systemctl daemon-reload
+systemctl enable --now greylock-direct-network.service
+if command -v rfkill >/dev/null 2>&1; then
+  rfkill block wifi || true
+fi
 
 if [[ -x /usr/lib/raspberrypi-sys-mods/imager_custom ]]; then
   /usr/lib/raspberrypi-sys-mods/imager_custom set_hostname "${HOSTNAME_VALUE}"
@@ -51,9 +88,6 @@ if [[ -x /usr/lib/raspberrypi-sys-mods/imager_custom ]]; then
   /usr/lib/raspberrypi-sys-mods/imager_custom enable_ssh -p
   /usr/lib/raspberrypi-sys-mods/imager_custom set_timezone America/New_York
   /usr/lib/raspberrypi-sys-mods/imager_custom set_keymap us
-  if [[ -n "${WIFI_SSID}" ]]; then
-    /usr/lib/raspberrypi-sys-mods/imager_custom set_wlan -p "${WIFI_SSID}" "${WIFI_PASSWORD}" US
-  fi
 else
   systemctl enable ssh
 fi
@@ -94,6 +128,28 @@ EOF
 
 systemctl enable greylock-radio.service greylock-radio-kiosk.service
 systemctl set-default graphical.target
+
+sed -i '/# BEGIN GREYLOCK HEADLESS/,/# END GREYLOCK HEADLESS/d' "${BOOT_ROOT}/config.txt"
+sed -i '/# BEGIN GREYLOCK TFT/,/# END GREYLOCK TFT/d' "${BOOT_ROOT}/config.txt"
+cat >>"${BOOT_ROOT}/config.txt" <<'EOF'
+
+# BEGIN GREYLOCK TFT
+[all]
+dtoverlay=disable-wifi
+dtparam=spi=on
+dtparam=i2c_arm=on
+enable_uart=1
+dtoverlay=tft35a:rotate=90
+hdmi_force_hotplug=1
+hdmi_group=2
+hdmi_mode=1
+hdmi_mode=87
+hdmi_cvt=480 320 60 6 0 0 0
+hdmi_drive=2
+gpu_mem=64
+disable_splash=1
+# END GREYLOCK TFT
+EOF
 
 rm -rf "${BUNDLE}"
 rm -f "${BOOT_ROOT}/firstrun.sh"

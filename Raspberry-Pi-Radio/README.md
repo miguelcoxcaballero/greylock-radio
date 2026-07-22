@@ -31,11 +31,15 @@ salida de linea del adaptador USB a un amplificador o al sistema de megafonia.
 La tarjeta preparada por este proyecto usa Raspberry Pi OS Lite de 32 bits. Al
 insertarla y encender la Pi:
 
-1. Dejala conectada a Internet, preferiblemente tambien por Ethernet durante la primera puesta en marcha.
+1. Conecta el puerto Ethernet de la Pi al router. La Wi-Fi de la Pi esta deshabilitada.
 2. Espera entre 10 y 25 minutos. Instalara audio, navegador y servicios, y se reiniciara.
 3. El panel se abrira automaticamente en la TFT.
 4. Desde otro dispositivo de la misma red abre `http://greylock-radio.local:8080`.
 5. Desde el PC preparado entra por SSH con `ssh greylock-radio`.
+
+El primer arranque no carga la TFT. Esto permite recuperar la Pi por Ethernet
+aunque el controlador de pantalla falle. La TFT se activa automaticamente al
+terminar la instalacion y aparece despues del reinicio.
 
 Para preparar otra tarjeta manualmente, consulta [docs/INSTALL.md](docs/INSTALL.md).
 
