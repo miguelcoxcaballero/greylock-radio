@@ -14,6 +14,8 @@ HOSTNAME_VALUE=greylock-radio
 ADMIN_USER=radio
 PASSWORD_HASH="$(printf '%s' '__PASSWORD_HASH_B64__' | base64 -d)"
 SSH_PUBLIC_KEY="$(printf '%s' '__SSH_PUBLIC_KEY_B64__' | base64 -d)"
+WIFI_SSID="$(printf '%s' '__WIFI_SSID_B64__' | base64 -d)"
+WIFI_PASSWORD="$(printf '%s' '__WIFI_PASSWORD_B64__' | base64 -d)"
 
 cat >/usr/local/sbin/greylock-direct-network <<'EOF'
 #!/bin/sh
@@ -51,7 +53,7 @@ chmod 0755 /etc/NetworkManager/dispatcher.d/90-greylock-direct
 systemctl daemon-reload
 systemctl enable --now greylock-direct-network.service
 if command -v rfkill >/dev/null 2>&1; then
-  rfkill block wifi || true
+  rfkill unblock wifi || true
 fi
 
 if [[ -x /usr/lib/raspberrypi-sys-mods/imager_custom ]]; then
@@ -88,6 +90,7 @@ if [[ -x /usr/lib/raspberrypi-sys-mods/imager_custom ]]; then
   /usr/lib/raspberrypi-sys-mods/imager_custom enable_ssh -p
   /usr/lib/raspberrypi-sys-mods/imager_custom set_timezone America/New_York
   /usr/lib/raspberrypi-sys-mods/imager_custom set_keymap us
+  /usr/lib/raspberrypi-sys-mods/imager_custom set_wlan -p "${WIFI_SSID}" "${WIFI_PASSWORD}" US
 else
   systemctl enable ssh
 fi
@@ -135,7 +138,6 @@ cat >>"${BOOT_ROOT}/config.txt" <<'EOF'
 
 # BEGIN GREYLOCK TFT
 [all]
-dtoverlay=disable-wifi
 dtparam=spi=on
 dtparam=i2c_arm=on
 enable_uart=1

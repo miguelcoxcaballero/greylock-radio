@@ -31,7 +31,7 @@ powershell -ExecutionPolicy Bypass -File tools\prepare-sd.ps1 `
 ```
 
 El script solo admite unidades USB de 8 a 64 GB y verifica el hash antes de
-borrar nada. Deshabilita la Wi-Fi de la Pi, configura Ethernet y guarda las
+borrar nada. Copia la Wi-Fi actual de Windows, configura Ethernet y guarda las
 credenciales nuevas en el escritorio del usuario.
 Espera encontrar la clave publica en
 `%USERPROFILE%\.ssh\greylock_radio_ed25519.pub`.
@@ -44,7 +44,7 @@ Espera encontrar la clave publica en
    - Zona horaria: `America/New_York`
    - Usuario: el que vaya a administrar la Pi
    - SSH: activado
-   - Wi-Fi: sin configurar; usa Ethernet
+   - Wi-Fi: la red disponible en el lugar de uso
 3. Arranca la Pi y entra por SSH.
 4. Copia esta carpeta a la Pi.
 5. Ejecuta:
@@ -87,8 +87,9 @@ powershell -ExecutionPolicy Bypass -File tools\repair-boot-sd.ps1 -DriveLetter E
 ## Primer arranque
 
 El primer arranque instala paquetes desde los repositorios de Raspberry Pi OS.
-Conecta Ethernet al router antes de encender. La TFT permanece blanca durante
-esta fase porque su overlay se activa solamente cuando la instalacion termina.
+Usa la misma Wi-Fi con la que se preparo la tarjeta o conecta Ethernet al router.
+La TFT permanece blanca durante esta fase porque su overlay se activa solamente
+cuando la instalacion termina.
 No cortes la corriente. El proceso
 guarda su progreso en `/boot/firmware/greylock-firstboot.log`, elimina la
 configuracion temporal de arranque y se reinicia cuando termina.

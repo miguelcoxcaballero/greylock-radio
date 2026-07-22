@@ -3,7 +3,7 @@
 ## Entrar por SSH desde este PC
 
 La tarjeta preparada instala la clave dedicada de Windows. Con la Pi encendida
-y conectada por Ethernet al mismo router:
+y conectada a la misma red por Wi-Fi o Ethernet:
 
 ```powershell
 ssh greylock-radio

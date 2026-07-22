@@ -39,6 +39,19 @@ if ($sshPublicKey -notmatch '^ssh-(ed25519|rsa)\s+[A-Za-z0-9+/=]+(?:\s+.*)?$') {
   throw "The SSH public key does not have a supported OpenSSH format."
 }
 
+$interfaceText = (netsh wlan show interfaces | Out-String)
+$ssidMatch = [regex]::Match($interfaceText, '(?m)^\s*SSID\s*:\s*(.+?)\s*$')
+if (-not $ssidMatch.Success) {
+  throw "Windows is not connected to a Wi-Fi network."
+}
+$wifiSsid = $ssidMatch.Groups[1].Value.Trim()
+$profileText = (netsh wlan show profile name="$wifiSsid" key=clear | Out-String)
+$keyMatch = [regex]::Match($profileText, '(?m)^\s*Key Content\s*:\s*(.+?)\s*$')
+if (-not $keyMatch.Success) {
+  throw "Could not read the saved password for Wi-Fi '$wifiSsid'."
+}
+$wifiPassword = $keyMatch.Groups[1].Value.Trim()
+
 $existingFirstRun = Get-Content -LiteralPath $firstRunPath -Raw
 $passwordHashB64 = Read-EmbeddedBase64 $existingFirstRun "PASSWORD_HASH"
 
@@ -51,7 +64,6 @@ $displayBlock = @'
 
 # BEGIN GREYLOCK HEADLESS
 [all]
-dtoverlay=disable-wifi
 dtparam=spi=on
 dtparam=i2c_arm=on
 enable_uart=1
@@ -64,6 +76,8 @@ Set-Content -LiteralPath $configPath -Value $config -Encoding ascii -NoNewline
 $template = Get-Content -LiteralPath (Join-Path $ProjectRoot "scripts\firstrun.template.sh") -Raw
 $firstRun = $template.Replace('__PASSWORD_HASH_B64__', $passwordHashB64)
 $firstRun = $firstRun.Replace('__SSH_PUBLIC_KEY_B64__', (ConvertTo-Base64 $sshPublicKey))
+$firstRun = $firstRun.Replace('__WIFI_SSID_B64__', (ConvertTo-Base64 $wifiSsid))
+$firstRun = $firstRun.Replace('__WIFI_PASSWORD_B64__', (ConvertTo-Base64 $wifiPassword))
 $utf8NoBom = New-Object Text.UTF8Encoding($false)
 [IO.File]::WriteAllText($firstRunPath, $firstRun, $utf8NoBom)
 
@@ -89,9 +103,9 @@ Greylock Radio SD recovery applied: $(Get-Date -Format o)
 Boot stage: headless; TFT enables after installation
 Ethernet DHCP: connect the Pi to the router
 Direct Ethernet: radio@192.168.137.2
-Wi-Fi: disabled
+Wi-Fi: $wifiSsid
 "@
 [IO.File]::WriteAllText((Join-Path $bootRoot "greylock-repair.txt"), $repairNote, $utf8NoBom)
 
 Write-Host "Drive ${DriveLetter}: repaired without reflashing."
-Write-Host "SSH will be available over Ethernet during first boot."
+Write-Host "SSH will be available over Wi-Fi or Ethernet during first boot."

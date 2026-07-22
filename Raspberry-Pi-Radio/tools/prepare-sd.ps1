@@ -52,6 +52,22 @@ if ($sshPublicKey -notmatch '^ssh-(ed25519|rsa)\s+[A-Za-z0-9+/=]+(?:\s+.*)?$') {
   throw "The SSH public key does not have a supported OpenSSH format."
 }
 
+$wifiSsid = ""
+$wifiPassword = ""
+$interfaceText = (netsh wlan show interfaces | Out-String)
+$ssidMatch = [regex]::Match($interfaceText, '(?m)^\s*SSID\s*:\s*(.+?)\s*$')
+if ($ssidMatch.Success) {
+  $wifiSsid = $ssidMatch.Groups[1].Value.Trim()
+  $profileText = (netsh wlan show profile name="$wifiSsid" key=clear | Out-String)
+  $keyMatch = [regex]::Match($profileText, '(?m)^\s*Key Content\s*:\s*(.+?)\s*$')
+  if ($keyMatch.Success) {
+    $wifiPassword = $keyMatch.Groups[1].Value.Trim()
+  }
+}
+if (-not $wifiSsid -or -not $wifiPassword) {
+  throw "A connected WPA Wi-Fi network with a saved password is required."
+}
+
 $openssl = "C:\Program Files\Git\usr\bin\openssl.exe"
 if (-not (Test-Path -LiteralPath $openssl)) {
   throw "OpenSSL was not found at $openssl."
@@ -109,7 +125,6 @@ $displayBlock = @'
 
 # BEGIN GREYLOCK HEADLESS
 [all]
-dtoverlay=disable-wifi
 dtparam=spi=on
 dtparam=i2c_arm=on
 enable_uart=1
@@ -126,6 +141,8 @@ function ConvertTo-Base64([string]$Value) {
 $firstRunTemplate = Get-Content -LiteralPath (Join-Path $ProjectRoot "scripts\firstrun.template.sh") -Raw
 $firstRun = $firstRunTemplate.Replace('__PASSWORD_HASH_B64__', (ConvertTo-Base64 $passwordHash))
 $firstRun = $firstRun.Replace('__SSH_PUBLIC_KEY_B64__', (ConvertTo-Base64 $sshPublicKey))
+$firstRun = $firstRun.Replace('__WIFI_SSID_B64__', (ConvertTo-Base64 $wifiSsid))
+$firstRun = $firstRun.Replace('__WIFI_PASSWORD_B64__', (ConvertTo-Base64 $wifiPassword))
 $utf8NoBom = New-Object Text.UTF8Encoding($false)
 [IO.File]::WriteAllText((Join-Path $bootRoot "firstrun.sh"), $firstRun, $utf8NoBom)
 
@@ -148,7 +165,7 @@ SSH: ssh radio@greylock-radio.local
 SSH key: $SshPublicKeyPath
 Ethernet DHCP: connect the Pi to the router
 Direct Ethernet: 192.168.137.2
-Wi-Fi: disabled
+Wi-Fi: $wifiSsid
 "@
 [IO.File]::WriteAllText($credentialsPath, $credentials, $utf8NoBom)
 
