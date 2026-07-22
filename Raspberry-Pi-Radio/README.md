@@ -18,7 +18,7 @@ grabados y permite hablar en directo con un microfono conectado a la Pi.
 ## Hardware previsto
 
 - Raspberry Pi 3B+ y microSD de 16 GB o mas.
-- Pantalla TFT SPI de 3,5 pulgadas con controlador `tft35a`/ILI9486 y tactil ADS7846.
+- Pantalla SuziePi TFT SPI de 3,5 pulgadas, 480x320, con ILI9486 y tactil ADS7846.
 - Adaptador de sonido USB con entrada de microfono y salida de linea.
 - Microfono compatible y amplificador, mezclador o sistema PA.
 - Fuente estable de 5 V / 2,5 A para la Pi 3B+.
@@ -35,6 +35,7 @@ insertarla y encender la Pi:
 2. Espera entre 10 y 25 minutos. Instalara audio, navegador y servicios, y se reiniciara.
 3. El panel se abrira automaticamente en la TFT.
 4. Desde otro dispositivo de la misma red abre `http://greylock-radio.local:8080`.
+5. Desde el PC preparado entra por SSH con `ssh greylock-radio`.
 
 Para preparar otra tarjeta manualmente, consulta [docs/INSTALL.md](docs/INSTALL.md).
 
@@ -63,3 +64,5 @@ microfono del telefono.
 
 Consulta [docs/AUDIO.md](docs/AUDIO.md) para elegir dispositivos y
 [docs/OPERATIONS.md](docs/OPERATIONS.md) para registros, copias y recuperacion.
+Las actualizaciones posteriores se pueden enviar por SSH con
+`tools/deploy-to-pi.ps1`; no requieren volver a grabar la microSD.

@@ -15,6 +15,7 @@ ADMIN_USER=radio
 PASSWORD_HASH="$(printf '%s' '__PASSWORD_HASH_B64__' | base64 -d)"
 WIFI_SSID="$(printf '%s' '__WIFI_SSID_B64__' | base64 -d)"
 WIFI_PASSWORD="$(printf '%s' '__WIFI_PASSWORD_B64__' | base64 -d)"
+SSH_PUBLIC_KEY="$(printf '%s' '__SSH_PUBLIC_KEY_B64__' | base64 -d)"
 
 if [[ -x /usr/lib/raspberrypi-sys-mods/imager_custom ]]; then
   /usr/lib/raspberrypi-sys-mods/imager_custom set_hostname "${HOSTNAME_VALUE}"
@@ -31,9 +32,20 @@ elif [[ -x /usr/lib/userconf-pi/userconf ]]; then
 else
   useradd -m -s /bin/bash -G adm,audio,cdrom,dialout,gpio,i2c,input,netdev,plugdev,render,spi,sudo,video "${ADMIN_USER}"
   echo "${ADMIN_USER}:${PASSWORD_HASH}" | chpasswd -e
-  echo "${ADMIN_USER} ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/010_greylock-radio
-  chmod 0440 /etc/sudoers.d/010_greylock-radio
 fi
+usermod -a -G adm,audio,cdrom,dialout,gpio,i2c,input,netdev,plugdev,render,spi,sudo,video "${ADMIN_USER}"
+echo "${ADMIN_USER} ALL=(ALL) NOPASSWD: ALL" >/etc/sudoers.d/010_greylock-radio
+chmod 0440 /etc/sudoers.d/010_greylock-radio
+
+ADMIN_HOME="$(getent passwd "${ADMIN_USER}" | cut -d: -f6)"
+if [[ -z "${ADMIN_HOME}" ]]; then
+  echo "Could not determine the home directory for ${ADMIN_USER}."
+  exit 1
+fi
+install -d -o "${ADMIN_USER}" -g "${ADMIN_USER}" -m 0700 "${ADMIN_HOME}/.ssh"
+printf '%s\n' "${SSH_PUBLIC_KEY}" >"${ADMIN_HOME}/.ssh/authorized_keys"
+chown "${ADMIN_USER}:${ADMIN_USER}" "${ADMIN_HOME}/.ssh/authorized_keys"
+chmod 0600 "${ADMIN_HOME}/.ssh/authorized_keys"
 
 if [[ -x /usr/lib/raspberrypi-sys-mods/imager_custom ]]; then
   /usr/lib/raspberrypi-sys-mods/imager_custom enable_ssh -p
@@ -45,6 +57,7 @@ if [[ -x /usr/lib/raspberrypi-sys-mods/imager_custom ]]; then
 else
   systemctl enable ssh
 fi
+systemctl enable --now ssh
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get -o Acquire::Retries=10 update
@@ -67,9 +80,10 @@ Section "Device"
 EndSection
 
 Section "InputClass"
-  Identifier "Greylock TFT touch rotation"
+  Identifier "Greylock TFT touch calibration"
   MatchProduct "ADS7846 Touchscreen"
-  Option "TransformationMatrix" "0 -1 1 1 0 0 0 0 1"
+  Option "Calibration" "3936 227 268 3880"
+  Option "SwapAxes" "1"
 EndSection
 EOF
 

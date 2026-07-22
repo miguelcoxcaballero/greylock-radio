@@ -1,5 +1,30 @@
 # Operacion y recuperacion
 
+## Entrar por SSH desde este PC
+
+La tarjeta preparada instala la clave dedicada de Windows. Con la Pi encendida
+y conectada a la misma red:
+
+```powershell
+ssh greylock-radio
+```
+
+El alias usa `radio@greylock-radio.local` y la clave
+`%USERPROFILE%\.ssh\greylock_radio_ed25519`. La primera conexion pedira aceptar
+la huella del equipo. Si el nombre `.local` aun no aparece durante el primer
+arranque, conecta Ethernet y busca la direccion `greylock-radio` en el router.
+
+## Actualizar sin volver a grabar la tarjeta
+
+Desde la carpeta `Raspberry-Pi-Radio` en este PC:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\deploy-to-pi.ps1
+```
+
+El despliegue copia el programa por SSH, ejecuta de nuevo los instaladores y
+conserva la configuracion y todo el audio de `/srv/greylock-radio/media`.
+
 ## Estado
 
 ```bash

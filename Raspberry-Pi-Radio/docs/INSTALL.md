@@ -13,7 +13,8 @@ https://www.raspberrypi.com/software/operating-systems/
 ## Preparar una tarjeta desde Windows
 
 El aprovisionador incluido borra una microSD, graba la imagen, conserva el
-overlay `tft35a`, copia la aplicacion y deja preparado el primer arranque. La
+overlay `tft35a`, copia la aplicacion, instala la clave SSH del PC y deja
+preparado el primer arranque. La
 imagen usada para esta unidad es:
 
 ```text
@@ -32,6 +33,8 @@ powershell -ExecutionPolicy Bypass -File tools\prepare-sd.ps1 `
 El script solo admite unidades USB de 8 a 64 GB y verifica el hash antes de
 borrar nada. Preconfigura la red Wi-Fi a la que esta conectado Windows, si puede
 leer su perfil, y guarda las credenciales nuevas en el escritorio del usuario.
+Espera encontrar la clave publica en
+`%USERPROFILE%\.ssh\greylock_radio_ed25519.pub`.
 
 ## Preparacion manual
 
@@ -62,17 +65,24 @@ El instalador puede ejecutarse de nuevo para actualizar el programa. Conserva
 La tarjeta original identifico la pantalla como:
 
 ```text
+Producto: SuziePi/GoodTFT LCD35
 Controlador de video: ILI9486
 Controlador tactil: ADS7846
-Overlay: tft35a
-Resolucion: 800x533
-Rotacion: 270 grados
+Overlay: tft35a (LCD-show)
+Resolucion: 480x320
+Rotacion: 90 grados
 Framebuffer de X: /dev/fb1
 ```
 
-El aprovisionador conserva `hardware/tft35a.dtbo`, activa SPI e I2C, configura
-Xorg para el framebuffer secundario y aplica la matriz tactil correspondiente.
+El aprovisionador instala `hardware/tft35a.dtbo`, activa SPI e I2C, configura
+Xorg para el framebuffer secundario y aplica la calibracion tactil oficial.
 No uses esta configuracion con otro modelo de pantalla sin cambiar el overlay.
+
+Si la tarjeta ya esta grabada, se puede reparar sin formatearla:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\repair-boot-sd.ps1 -DriveLetter E
+```
 
 ## Primer arranque
 
@@ -81,5 +91,5 @@ No cortes la corriente aunque la pantalla permanezca en consola. El proceso
 guarda su progreso en `/boot/firmware/greylock-firstboot.log`, elimina la
 configuracion temporal de Wi-Fi y se reinicia cuando termina.
 
-Si la TFT no abre el panel despues de 25 minutos, conecta HDMI o entra por SSH y
-consulta [OPERATIONS.md](OPERATIONS.md).
+Si la TFT no abre el panel despues de 25 minutos, entra con
+`ssh greylock-radio` o conecta HDMI y consulta [OPERATIONS.md](OPERATIONS.md).

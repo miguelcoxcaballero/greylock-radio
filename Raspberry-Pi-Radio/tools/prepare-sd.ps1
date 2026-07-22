@@ -4,6 +4,7 @@ param(
   [string]$ImagePath,
   [int]$DiskNumber = 2,
   [string]$DriveLetter = "E",
+  [string]$SshPublicKeyPath = (Join-Path $HOME ".ssh\greylock_radio_ed25519.pub"),
   [switch]$Force
 )
 
@@ -40,12 +41,15 @@ if ($actualHash -ne $ExpectedImageHash) {
   throw "Image hash mismatch. Expected $ExpectedImageHash but found $actualHash."
 }
 
-$oldOverlay = "${DriveLetter}:\overlays\tft35a.dtbo"
-if ($partition -and (Test-Path -LiteralPath $oldOverlay)) {
-  Copy-Item -LiteralPath $oldOverlay -Destination (Join-Path $ProjectRoot "hardware\tft35a.dtbo") -Force
-}
 if (-not (Test-Path -LiteralPath (Join-Path $ProjectRoot "hardware\tft35a.dtbo"))) {
   throw "The tft35a display overlay is missing."
+}
+if (-not (Test-Path -LiteralPath $SshPublicKeyPath)) {
+  throw "SSH public key not found: $SshPublicKeyPath"
+}
+$sshPublicKey = (Get-Content -LiteralPath $SshPublicKeyPath -Raw).Trim()
+if ($sshPublicKey -notmatch '^ssh-(ed25519|rsa)\s+[A-Za-z0-9+/=]+(?:\s+.*)?$') {
+  throw "The SSH public key does not have a supported OpenSSH format."
 }
 
 $wifiSsid = ""
@@ -120,11 +124,13 @@ $displayBlock = @'
 [all]
 dtparam=spi=on
 dtparam=i2c_arm=on
-dtoverlay=tft35a:rotate=270
+enable_uart=1
+dtoverlay=tft35a:rotate=90
 hdmi_force_hotplug=1
 hdmi_group=2
+hdmi_mode=1
 hdmi_mode=87
-hdmi_cvt=800 533 60 6 0 0 0
+hdmi_cvt=480 320 60 6 0 0 0
 hdmi_drive=2
 gpu_mem=64
 disable_splash=1
@@ -141,15 +147,18 @@ $firstRunTemplate = Get-Content -LiteralPath (Join-Path $ProjectRoot "scripts\fi
 $firstRun = $firstRunTemplate.Replace('__PASSWORD_HASH_B64__', (ConvertTo-Base64 $passwordHash))
 $firstRun = $firstRun.Replace('__WIFI_SSID_B64__', (ConvertTo-Base64 $wifiSsid))
 $firstRun = $firstRun.Replace('__WIFI_PASSWORD_B64__', (ConvertTo-Base64 $wifiPassword))
+$firstRun = $firstRun.Replace('__SSH_PUBLIC_KEY_B64__', (ConvertTo-Base64 $sshPublicKey))
 $utf8NoBom = New-Object Text.UTF8Encoding($false)
 [IO.File]::WriteAllText((Join-Path $bootRoot "firstrun.sh"), $firstRun, $utf8NoBom)
 
 $cmdlinePath = Join-Path $bootRoot "cmdline.txt"
-$cmdline = (Get-Content -LiteralPath $cmdlinePath -Raw).Trim()
-$cmdline += " systemd.run=/boot/firmware/firstrun.sh systemd.run_success_action=reboot systemd.unit=kernel-command-line.target"
+$cmdline = (Get-Content -LiteralPath $cmdlinePath -Raw).Trim() -replace '(?:^|\s)quiet(?=\s|$)', ''
+$cmdline = ($cmdline -replace '\s+', ' ').Trim()
+$cmdline += " fbcon=map:10 fbcon=font:ProFont6x11 systemd.run=/boot/firmware/firstrun.sh systemd.run_success_action=reboot systemd.unit=kernel-command-line.target"
 Set-Content -LiteralPath $cmdlinePath -Value ($cmdline + "`n") -Encoding ascii -NoNewline
 
 New-Item -ItemType File -Path (Join-Path $bootRoot "ssh") -Force | Out-Null
+[IO.File]::WriteAllText((Join-Path $bootRoot "userconf.txt"), "radio:$passwordHash`n", $utf8NoBom)
 
 $credentialsPath = Join-Path ([Environment]::GetFolderPath('Desktop')) "Greylock-Radio-Credentials.txt"
 $wifiDescription = if ($wifiSsid) { $wifiSsid } else { "not configured; use Ethernet on first boot" }
@@ -159,6 +168,7 @@ Username: radio
 Password: $adminPassword
 Web: http://greylock-radio.local:8080
 SSH: ssh radio@greylock-radio.local
+SSH key: $SshPublicKeyPath
 Wi-Fi: $wifiDescription
 "@
 [IO.File]::WriteAllText($credentialsPath, $credentials, $utf8NoBom)
